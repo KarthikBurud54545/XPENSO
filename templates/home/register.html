@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block sidebar %}{% endblock %}
+{% block main %}
+<div class="modern-bg">
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="glass-card shadow-lg border-0 animate-fade-in">
+          <div class="card-body p-5">
+            <div class="text-center mb-4">
+              <h2 class="fw-bold text-primary modern-title">Create Account</h2>
+              <p class="text-muted modern-subtitle">Join us to start tracking your expenses</p>
+            </div>
+            <form action="/handleSignup/" method='post' autocomplete="off">
+              {% csrf_token %}
+              <div class="row g-3">
+                <!-- Username -->
+                <div class="col-md-6">
+                  <label for="uname" class="form-label modern-label">Username</label>
+                  <input class="form-control modern-input" id="uname" name="uname" type="text" placeholder="Enter username" required/>
+                </div>
+                <!-- Email -->
+                <div class="col-md-6">
+                  <label for="email" class="form-label modern-label">Email address</label>
+                  <input class="form-control modern-input" id="email" name="email" type="email" placeholder="Enter email" required/>
+                </div>
+                <!-- First Name -->
+                <div class="col-md-6">
+                  <label for="fname" class="form-label modern-label">First Name</label>
+                  <input class="form-control modern-input" id="fname" name="fname" type="text" placeholder="First Name"/>
+                </div>
+                <!-- Last Name -->
+                <div class="col-md-6">
+                  <label for="lname" class="form-label modern-label">Last Name</label>
+                  <input class="form-control modern-input" id="lname" name="lname" type="text" placeholder="Last Name"/>
+                </div>
+                <!-- Profession -->
+                <div class="col-md-6">
+                  <label for="profession" class="form-label modern-label">Profession</label>
+                  <select class="form-select modern-input" id="profession" name="profession">
+                    <option value="Employee">Employee</option>
+                    <option value="Business">Business</option>
+                    <option value="Student">Student</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <!-- Income -->
+                <div class="col-md-6">
+                  <label for="income" class="form-label modern-label">Monthly Income (₹)</label>
+                  <input class="form-control modern-input" id="income" name="income" type="number" placeholder="Income" required/>
+                </div>
+                <!-- Savings -->
+                <div class="col-md-6">
+                  <label for="Savings" class="form-label modern-label">Monthly Savings Target (₹)</label>
+                  <input class="form-control modern-input" id="Savings" name="Savings" type="number" placeholder="Savings" required/>
+                </div>
+                <!-- Password -->
+                <div class="col-md-6">
+                  <label for="pass1" class="form-label modern-label">Password</label>
+                  <input class="form-control modern-input" id="pass1" name="pass1" type="password" placeholder="Password" required/>
+                </div>
+                <!-- Confirm Password -->
+                <div class="col-md-6">
+                  <label for="pass2" class="form-label modern-label">Confirm Password</label>
+                  <input class="form-control modern-input" id="pass2" name="pass2" type="password" placeholder="Confirm Password" required/>
+                </div>
+              </div>
+              <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-gradient btn-lg ripple">
+                  <span>Create Account</span>
+                </button>
+              </div>
+            </form>
+            <div class="text-center mt-4">
+              <p class="mb-0">Already have an account? <a href="/" class="text-primary text-decoration-none">Sign in</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+body, .modern-bg {
+  font-family: 'Inter', Arial, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #18181b 0%, #23272f 100%);
+  animation: bgMove 12s ease-in-out infinite alternate;
+}
+@keyframes bgMove {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 100% 50%; }
+}
+.glass-card {
+  background: rgba(24, 24, 27, 0.92);
+  border-radius: 2rem;
+  box-shadow: 0 12px 48px 0 rgba(0,0,0,0.55);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  border: 1.5px solid rgba(37, 99, 235, 0.10);
+  transition: box-shadow 0.3s, transform 0.2s;
+  will-change: transform;
+}
+.glass-card:hover {
+  box-shadow: 0 20px 60px 0 rgba(37,99,235,0.18);
+  transform: scale(1.025);
+}
+.animate-fade-in {
+  animation: fadeIn 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.modern-title {
+  font-size: 2.3rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #2563eb !important;
+}
+.modern-subtitle {
+  font-size: 1.1rem;
+  color: #bfc9d1 !important;
+}
+.form-label.modern-label {
+  color: #bfc9d1;
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.01em;
+}
+.modern-input {
+  background: rgba(36,37,42,0.95) !important;
+  color: #f3f4f6 !important;
+  border: 1.5px solid #23272f !important;
+  border-radius: 1rem !important;
+  font-size: 1.13rem !important;
+  font-weight: 500 !important;
+  padding: 1.05rem 0.9rem !important;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.modern-input:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 2px #2563eb33 !important;
+  background: rgba(36,37,42,1) !important;
+  color: #fff !important;
+}
+.btn-gradient {
+  background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+  border: none;
+  border-radius: 1rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 12px 0 rgba(37,99,235,0.13);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+.btn-gradient:hover, .btn-gradient:focus {
+  background: linear-gradient(90deg, #1d4ed8 0%, #2563eb 100%);
+  box-shadow: 0 6px 24px 0 rgba(37,99,235,0.22);
+  transform: translateY(-2px) scale(1.04);
+}
+.btn-gradient span {
+  position: relative;
+  z-index: 2;
+}
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+.ripple:after {
+  content: '';
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.18);
+  border-radius: 100%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.4s cubic-bezier(0.4,0,0.2,1), height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s;
+}
+.ripple:active:after {
+  width: 220px;
+  height: 220px;
+  opacity: 1;
+  transition: 0s;
+}
+.card-footer {
+  background: transparent;
+  border-top: none;
+}
+.text-primary {
+  color: #2563eb !important;
+}
+.text-muted {
+  color: #bfc9d1 !important;
+}
+@media (max-width: 768px) {
+  .glass-card {
+    padding: 0.5rem;
+  }
+  .card-body {
+    padding: 2rem 1rem !important;
+  }
+  .modern-title {
+    font-size: 1.6rem;
+  }
+}
+</style>
+{% endblock %}

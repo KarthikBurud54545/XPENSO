@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Spending Forecast{% endblock %}
+
+{% block content %}
+<div style="background: #fffae6; color: #222; border: 2px solid #fbbf24; padding: 18px; font-size: 1.2em; margin-bottom: 24px;">
+<strong>DEBUG:</strong><br>
+Categories: {{ categories|safe }}<br>
+Forecast Data: {{ forecast_data|safe }}<br>
+Budget Data: {{ budget_data|safe }}
+</div>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Spending Forecast - {{ next_month }}</h1>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Monthly Average (Past Year)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ monthly_avg|floatformat:2 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecast Charts Row -->
+    <div class="row">
+        <!-- Category Forecast Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">30-Day Category Forecast</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-area">
+                        <canvas id="categoryForecastChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Impact Pie Chart -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Budget Impact Analysis</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-pie pt-4">
+                        <canvas id="budgetImpactChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Forecast Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Category-wise Forecast Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="forecastTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Monthly Average</th>
+                                    <th>Predicted Next Month</th>
+                                    <th>Trend</th>
+                                    <th>Confidence</th>
+                                    <th>Budget Impact</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in categories %}
+                                {% with forecast=forecast_data|get_item:category %}
+                                {% with budget=budget_data|get_item:category %}
+                                <tr>
+                                    <td>{{ category }}</td>
+                                    <td>₹{{ forecast.avg_monthly|floatformat:2 }}</td>
+                                    <td>₹{{ forecast.predictions.0|floatformat:2 }}</td>
+                                    <td>
+                                        {% if forecast.trend == 'increasing' %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-arrow-up"></i> Increasing
+                                        </span>
+                                        {% else %}
+                                        <span class="text-success">
+                                            <i class="fas fa-arrow-down"></i> Decreasing
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" 
+                                                style="width: {{ forecast.confidence }}%"
+                                                aria-valuenow="{{ forecast.confidence }}" 
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                {{ forecast.confidence }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if budget %}
+                                            {% if budget.variance > 0 %}
+                                            <span class="text-danger">
+                                                Over budget by ₹{{ budget.variance|floatformat:2 }}
+                                            </span>
+                                            {% else %}
+                                            <span class="text-success">
+                                                Under budget by ₹{{ budget.variance|abs_value|floatformat:2 }}
+                                            </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No budget set</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endwith %}
+                                {% endwith %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not categories %}
+    <div class="alert alert-warning mt-4">No expense data available for forecasting. Please add some expenses.</div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+// Chart.js configurations
+document.addEventListener('DOMContentLoaded', function() {
+    // Category Forecast Chart
+    var ctx = document.getElementById('categoryForecastChart').getContext('2d');
+    var forecastData = {{ forecast_data|safe }};
+    var categories = {{ categories|safe }};
+    
+    var datasets = categories.map(function(category, index) {
+        var color = getRandomColor(index);
+        return {
+            label: category,
+            data: forecastData[category].predictions,
+            borderColor: color,
+            backgroundColor: color + '20',
+            fill: true
+        };
+    });
+
+    var categoryChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 30}, (_, i) => 'Day ' + (i + 1)),
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Budget Impact Chart
+    var budgetCtx = document.getElementById('budgetImpactChart').getContext('2d');
+    var budgetData = {{ budget_data|safe }};
+    
+    var budgetLabels = [];
+    var budgetAmounts = [];
+    var predictedAmounts = [];
+    var backgroundColors = [];
+    
+    Object.entries(budgetData).forEach(function([category, data], index) {
+        budgetLabels.push(category);
+        budgetAmounts.push(data.budget);
+        predictedAmounts.push(data.predicted);
+        backgroundColors.push(getRandomColor(index));
+    });
+
+    var budgetChart = new Chart(budgetCtx, {
+        type: 'doughnut',
+        data: {
+            labels: budgetLabels,
+            datasets: [{
+                data: predictedAmounts,
+                backgroundColor: backgroundColors
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.label || '';
+                            var value = context.parsed || 0;
+                            var budget = budgetAmounts[context.dataIndex];
+                            var diff = value - budget;
+                            
+                            return [
+                                label,
+                                'Predicted: ₹' + value.toLocaleString(),
+                                'Budget: ₹' + budget.toLocaleString(),
+                                diff > 0 ? 'Over by: ₹' + diff.toLocaleString() : 'Under by: ₹' + Math.abs(diff).toLocaleString()
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+
+function getRandomColor(index) {
+    var colors = [
+        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+        '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf'
+    ];
+    return colors[index % colors.length];
+}
+</script>
+{% endblock %} 

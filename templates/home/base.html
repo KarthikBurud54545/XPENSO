@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-900">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Expense Tracker Application" />
+    <meta name="author" content="" />
+    <title>{% block title %}XPENSO{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"
+        crossorigin="anonymous"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="h-full bg-gray-900 text-white">
+    <!-- Flash Messages -->
+    <div class="fixed top-4 right-4 z-50" id="alert-message">
+        {% for message in messages %}
+        <div class="bg-gray-800 text-white px-6 py-4 rounded-lg shadow-lg mb-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle mr-3"></i>
+                <span>{{ message }}</span>
+            </div>
+            <button type="button" class="text-gray-400 hover:text-white" data-dismiss="alert">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Top Navbar -->
+    <nav class="bg-gray-800 border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/index" class="text-2xl font-bold text-blue-500">
+                        <i class="fas fa-wallet mr-2"></i>XPENSO
+                    </a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="text-gray-300 hover:text-white">
+                        <i class="fas fa-user mr-1"></i>Profile
+                    </a>
+                    <a href="{% url 'handleLogout' %}" class="text-gray-300 hover:text-white">
+                        <i class="fas fa-sign-out-alt mr-1"></i>Logout
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="text-gray-300 hover:text-white">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Login
+                    </a>
+                    <a href="{% url 'register' %}" class="text-gray-300 hover:text-white">
+                        <i class="fas fa-user-plus mr-1"></i>Register
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Layout -->
+    <div class="flex h-[calc(100vh-4rem)]">
+        <!-- Sidebar -->
+        <nav class="w-64 bg-gray-800 border-r border-gray-700">
+            <div class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="/index"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/index' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-tachometer-alt w-5 h-5 mr-3"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/weekly"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/weekly' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-calendar-week w-5 h-5 mr-3"></i>
+                            <span>Weekly Record</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/stats"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/stats' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-calendar-alt w-5 h-5 mr-3"></i>
+                            <span>Monthly Record</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/info"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/info' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-table w-5 h-5 mr-3"></i>
+                            <span>Yearly Record</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tables"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/tables' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-history w-5 h-5 mr-3"></i>
+                            <span>History</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/investments"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/investments' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-chart-line w-5 h-5 mr-3"></i>
+                            <span>Investments</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/budgets"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/budgets' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-piggy-bank w-5 h-5 mr-3"></i>
+                            <span>Budgets</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/addmoney"
+                            class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 rounded-lg {% if request.path == '/addmoney' %}bg-gray-700{% endif %}">
+                            <i class="fas fa-plus-circle w-5 h-5 mr-3"></i>
+                            <span>Add Transaction</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-900">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        $(function () {
+            setTimeout(function () {
+                $("#alert-message").fadeOut();
+            }, 2000);
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

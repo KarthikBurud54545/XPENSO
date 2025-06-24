@@ -1,0 +1,159 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.add-transaction-outer {
+    background: #181818;
+    min-height: 100vh;
+    width: 100%;
+    padding: 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.add-transaction-card {
+    background: rgba(24,27,32,0.92);
+    color: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(37,99,235,0.18);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid #23272f;
+    min-width: 420px;
+    max-width: 480px;
+    width: 100%;
+    animation: fadeInUp 0.8s cubic-bezier(.23,1.02,.32,1);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.add-transaction-card:hover {
+    box-shadow: 0 16px 48px 0 rgba(37,99,235,0.22);
+    transform: translateY(-4px) scale(1.02);
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: none; }
+}
+.add-transaction-card .card-body {
+    padding: 2.5rem 2rem 2rem 2rem;
+}
+.add-transaction-card h2 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.2rem;
+}
+.add-transaction-card .text-muted {
+    color: #b0b8c1 !important;
+    font-size: 1.08rem;
+    margin-bottom: 1.5rem;
+}
+.add-transaction-form-label {
+    color: #b0b8c1;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    margin-left: 0.1rem;
+    display: block;
+    font-size: 1.05rem;
+}
+.add-transaction-form-input, .add-transaction-form-select, .add-transaction-form-textarea {
+    background: #23272f;
+    color: #fff;
+    border: 1.5px solid #353b48;
+    border-radius: 0.75rem;
+    font-size: 1.08rem;
+    box-shadow: none;
+    width: 100%;
+    padding: 0.7rem 1.1rem;
+    margin-bottom: 1.1rem;
+    transition: border 0.2s;
+}
+.add-transaction-form-input:focus, .add-transaction-form-select:focus, .add-transaction-form-textarea:focus {
+    border: 1.5px solid #2563eb;
+    box-shadow: 0 0 0 0.1rem #2563eb33;
+    background: #23272f;
+    color: #fff;
+    outline: none;
+}
+.add-transaction-btns {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2.2rem;
+    gap: 1rem;
+}
+.add-transaction-btns .btn {
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding: 0.7rem 1.5rem;
+    transition: background 0.18s, color 0.18s, transform 0.18s;
+}
+.add-transaction-btns .btn-primary {
+    background: linear-gradient(90deg, #2563eb 0%, #36A2EB 100%);
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
+}
+.add-transaction-btns .btn-primary:hover {
+    background: linear-gradient(90deg, #36A2EB 0%, #2563eb 100%);
+    color: #fff;
+    transform: translateY(-2px) scale(1.04);
+}
+.add-transaction-btns .btn-outline-light {
+    background: #23272f;
+    color: #fff;
+    border: 1.5px solid #353b48;
+}
+.add-transaction-btns .btn-outline-light:hover {
+    background: #353b48;
+    color: #fff;
+    transform: translateY(-2px) scale(1.04);
+}
+</style>
+<div class="add-transaction-outer">
+    <div class="add-transaction-card card shadow-lg border-0">
+        <div class="card-body">
+            <div class="mb-4 text-center">
+                <h2 class="fw-bold mb-1">Add New Transaction</h2>
+                <div class="text-muted">Record a new transaction in your portfolio</div>
+            </div>
+            <form method="post" action="#" autocomplete="off">
+                <label for="transaction_name" class="add-transaction-form-label">Transaction Name</label>
+                <input type="text" class="add-transaction-form-input" id="transaction_name" name="transaction_name" placeholder="Transaction Name" required>
+
+                <label for="transaction_date" class="add-transaction-form-label">Date</label>
+                <input type="date" class="add-transaction-form-input" id="transaction_date" name="transaction_date" placeholder="Date" required>
+
+                <label for="transaction_amount" class="add-transaction-form-label">Amount (₹)</label>
+                <input type="number" class="add-transaction-form-input" id="transaction_amount" name="transaction_amount" placeholder="Amount (₹)" step="0.01" min="0" required>
+
+                <label for="transaction_type" class="add-transaction-form-label">Type</label>
+                <select class="add-transaction-form-select" id="transaction_type" name="transaction_type" required>
+                    <option value="" selected>Select Type</option>
+                    <option value="Credit">Credit</option>
+                    <option value="Debit">Debit</option>
+                </select>
+
+                <label for="transaction_category" class="add-transaction-form-label">Category</label>
+                <select class="add-transaction-form-select" id="transaction_category" name="transaction_category" required>
+                    <option value="" selected>Select Category</option>
+                    <option value="Investment">Investment</option>
+                    <option value="Expense">Expense</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label for="transaction_notes" class="add-transaction-form-label">Notes (Optional)</label>
+                <textarea class="add-transaction-form-textarea" id="transaction_notes" name="transaction_notes" placeholder="Notes (Optional)" style="height: 80px;"></textarea>
+
+                <div class="add-transaction-btns">
+                    <a href="{% url 'investments' %}" class="btn btn-outline-light btn-lg flex-fill">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg flex-fill">
+                        <i class="fas fa-plus me-2"></i>Add Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

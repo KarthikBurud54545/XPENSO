@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block main %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card bg-dark text-light">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Edit Transaction
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'edit_transaction' transaction.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Transaction Type</label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="Income" {% if transaction.add_money == 'Income' %}selected{% endif %}>Income</option>
+                                <option value="Expense" {% if transaction.add_money == 'Expense' %}selected{% endif %}>Expense</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="amount" class="form-label">Amount</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" id="amount" name="amount" 
+                                       value="{{ transaction.quantity|abs_value }}" step="0.01" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="category" name="category" 
+                                   value="{{ transaction.Category }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ transaction.Date|date:'Y-m-d' }}" required>
+                        </div>
+                        
+                        {% if transaction.notes %}
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ transaction.notes }}</textarea>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'tables' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Transactions
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Ensure negative values for expenses
+    document.getElementById('type').addEventListener('change', function() {
+        const amountInput = document.getElementById('amount');
+        const currentValue = Math.abs(parseFloat(amountInput.value) || 0);
+        amountInput.value = this.value === 'Expense' ? -currentValue : currentValue;
+    });
+
+    // Format amount on form submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const typeSelect = document.getElementById('type');
+        const amountInput = document.getElementById('amount');
+        const currentValue = Math.abs(parseFloat(amountInput.value) || 0);
+        amountInput.value = typeSelect.value === 'Expense' ? -currentValue : currentValue;
+    });
+</script>
+{% endblock %} 

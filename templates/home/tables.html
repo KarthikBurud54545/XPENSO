@@ -1,0 +1,1108 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block sidebar %}
+<nav class="col-12 col-md-3 col-lg-2 d-md-block bg-dark sidebar shadow-sm rounded-3 mb-4 mb-md-0" style="min-height: 80vh;">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/index' %}active{% endif %}" href="/index">
+                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/profile' %}active{% endif %}" href="/profile">
+                    <i class="fas fa-user me-2"></i> Profile
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/weekly' %}active{% endif %}" href="/weekly">
+                    <i class="fas fa-calendar-week me-2"></i> Weekly Record
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/stats' %}active{% endif %}" href="/stats">
+                    <i class="fas fa-calendar-alt me-2"></i> Monthly Record
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/info' %}active{% endif %}" href="/info">
+                    <i class="fas fa-table me-2"></i> Yearly Record
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/tables' %}active{% endif %}" href="/tables">
+                    <i class="fas fa-history me-2"></i> History
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/investments' %}active{% endif %}" href="/investments">
+                    <i class="fas fa-chart-line me-2"></i> Investments
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/budgets' %}active{% endif %}" href="/budgets">
+                    <i class="fas fa-piggy-bank me-2"></i> Budgets
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a class="nav-link d-flex align-items-center {% if request.path == '/addmoney' %}active{% endif %}" href="/addmoney">
+                    <i class="fas fa-plus-circle me-2"></i> Add Transaction
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block main %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">
+            <i class="fas fa-table me-2"></i>Transaction History
+        </h4>
+        <div class="d-flex gap-3">
+            <button type="button" class="filter-btn" data-bs-toggle="modal" data-bs-target="#dateFilterModal">
+                <i class="fas fa-filter me-2"></i>Filter by Date
+            </button>
+            <div class="dropdown">
+                <button class="export-btn" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-download me-2"></i>Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                    <li>
+                        <button class="dropdown-item" onclick="exportData('csv')">
+                            <i class="fas fa-file-csv me-2"></i>Export as CSV
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" onclick="exportData('excel')">
+                            <i class="fas fa-file-excel me-2"></i>Export as Excel
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item" onclick="exportData('pdf')">
+                            <i class="fas fa-file-pdf me-2"></i>Export as PDF
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <button type="button" class="add-transaction-btn" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+                <i class="fas fa-plus me-2"></i>Add Transaction
+            </button>
+        </div>
+    </div>
+
+    <!-- Date Range Modal with Improved Layout -->
+    <div class="modal fade date-filter-modal" id="dateFilterModal" tabindex="-1" aria-labelledby="dateFilterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dateFilterModalLabel">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Filter by Date Range
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="dateFilterForm">
+                        <div class="mb-4">
+                            <label for="startDate" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate" name="start_date" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="endDate" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="endDate" name="end_date" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-btn modal-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="modal-btn modal-btn-primary" onclick="applyDateFilter()">Apply Filter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Table Card with Improved Styling -->
+    <div class="glass-card bg-dark text-light shadow-sm animate-fade-in">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover table-dark align-middle" id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for money in addmoney %}
+                        <tr>
+                            <td>{{ money.add_money }}</td>
+                            <td class="{% if money.quantity < 0 %}text-danger{% else %}text-success{% endif %}">
+                                ₹{{ money.quantity|abs_value|floatformat:2 }}
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ money.Category }}</span>
+                            </td>
+                            <td>
+                                <span class="badge {% if money.add_money == 'Income' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ money.add_money }}
+                                </span>
+                            </td>
+                            <td>{{ money.Date|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <button type="button" class="action-btn view-btn" onclick="viewTransaction({{ money.id }})" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <a href="{% url 'edit_transaction' money.id %}" class="action-btn edit-btn" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="action-btn delete-btn" onclick="deleteTransaction({{ money.id }})" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    {% if money.Category == "Investment" %}
+                                    <a href="{% url 'investment_dashboard' money.id %}" class="action-btn view-analytics-btn" title="View Analytics">
+                                        <i class="fas fa-chart-line"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal with Improved Layout -->
+    <div class="modal fade" id="transactionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header border-bottom border-secondary">
+                    <h5 class="modal-title">
+                        <i class="fas fa-info-circle me-2"></i>Transaction Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="transactionDetails"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add loading overlay -->
+    <div class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal fade transaction-modal" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTransactionModalLabel">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Add New Transaction
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTransactionForm" method="post" action="/addmoney_submission/">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">Transaction Type</label>
+                            <div class="type-buttons">
+                                <label class="type-btn income-type">
+                                    <input type="radio" name="add_money" value="Income" required>
+                                    <span class="type-content">
+                                        <i class="fas fa-arrow-down"></i>
+                                        Income
+                                    </span>
+                                </label>
+                                <label class="type-btn expense-type">
+                                    <input type="radio" name="add_money" value="Expense" required checked>
+                                    <span class="type-content">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Expense
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="quantity" class="form-label">Amount (₹)</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter amount" step="0.01" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="Category" class="form-label">Category</label>
+                            <select class="form-select" id="Category" name="Category" required>
+                                <option value="" selected disabled>Select a category</option>
+                                <option value="Food">Food</option>
+                                <option value="Transportation">Transportation</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Bills">Bills</option>
+                                <option value="Health">Health</option>
+                                <option value="Education">Education</option>
+                                <option value="Investment">Investment</option>
+                                <option value="Salary">Salary</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="Date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="Date" name="Date" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Add notes about this transaction"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="modal-btn modal-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="addTransactionForm" class="modal-btn modal-btn-primary">
+                        <i class="fas fa-check me-2"></i>Add Transaction
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+body { background: #000 !important; }
+.glass-card {
+  background: rgba(255,255,255,0.13);
+  border-radius: 1.7rem;
+  box-shadow: 0 8px 32px 0 rgba(37,99,235,0.18), 0 0 0 4px #2563eb22;
+  border: 1.5px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: #e0e7ef;
+  animation: glassFadeIn 1s cubic-bezier(.4,0,.2,1);
+  position: relative;
+  overflow: hidden;
+}
+@keyframes glassFadeIn { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
+.glass-header {
+  background: linear-gradient(90deg, #36A2EB 0%, #a78bfa 100%);
+  color: #fff;
+  border-top-left-radius: 1.7rem;
+  border-top-right-radius: 1.7rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  box-shadow: 0 2px 12px 0 #36A2EB33;
+}
+.table-dark {
+    --bs-table-bg: transparent;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.table-dark thead th {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: none;
+    padding: 1rem;
+}
+
+.table-dark td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(33, 37, 41, 0.95);
+}
+
+.dropdown-menu {
+    background: #343a40;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-item {
+    color: #fff;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.form-control, .form-select {
+    background-color: #343a40;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #343a40;
+    border-color: #0d6efd;
+    color: #fff;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.btn-group .btn {
+    padding: 0.375rem 0.5rem;
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+}
+
+.modal-content {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* DataTables Custom Styling */
+.dataTables_wrapper {
+    padding: 1rem 0;
+}
+
+.dataTables_length select,
+.dataTables_filter input {
+    background-color: #343a40 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    padding: 0.375rem 0.75rem;
+}
+
+.dataTables_info,
+.dataTables_length label,
+.dataTables_filter label {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.page-link {
+    background-color: #343a40;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.page-link:hover {
+    background-color: #495057;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Action Buttons */
+.action-btn {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.2s;
+    color: #a0aec0;
+}
+
+.view-btn:hover {
+    color: #3182ce;
+    background-color: rgba(49, 130, 206, 0.1);
+    transform: translateY(-1px);
+}
+
+.edit-btn:hover {
+    color: #48bb78;
+    background-color: rgba(72, 187, 120, 0.1);
+    transform: translateY(-1px);
+}
+
+.delete-btn:hover {
+    color: #e53e3e;
+    background-color: rgba(229, 62, 62, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Filter and Export Buttons */
+.filter-btn, .export-btn {
+    background-color: #2d3748;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover, .export-btn:hover {
+    background-color: #4a5568;
+    transform: translateY(-1px);
+}
+
+.add-transaction-btn {
+    background-color: #3182ce;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.add-transaction-btn:hover {
+    background-color: #2c5282;
+    transform: translateY(-1px);
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-left-color: #3182ce;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Success Animation */
+.success-animation {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Transaction Type Selector */
+.transaction-type-selector {
+    margin-bottom: 1.5rem;
+}
+
+.type-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.type-btn {
+    flex: 1;
+    cursor: pointer;
+    margin: 0;
+}
+
+.type-btn input[type="radio"] {
+    display: none;
+}
+
+.type-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.income-type .type-content:hover {
+    background: rgba(72, 187, 120, 0.1);
+    border-color: rgba(72, 187, 120, 0.2);
+}
+
+.expense-type .type-content:hover {
+    background: rgba(229, 62, 62, 0.1);
+    border-color: rgba(229, 62, 62, 0.2);
+}
+
+.type-btn input[type="radio"]:checked + .type-content {
+    border-width: 2px;
+}
+
+.income-type input[type="radio"]:checked + .type-content {
+    border-color: #48bb78;
+    background: rgba(72, 187, 120, 0.1);
+}
+
+.expense-type input[type="radio"]:checked + .type-content {
+    border-color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+}
+
+/* Modal Buttons */
+.modal-btn {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.modal-btn-primary {
+    background-color: #3182ce;
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    background-color: #2c5282;
+    transform: translateY(-1px);
+}
+
+.modal-btn-secondary {
+    background-color: #4a5568;
+    color: white;
+}
+
+.modal-btn-secondary:hover {
+    background-color: #2d3748;
+    transform: translateY(-1px);
+}
+
+/* Transaction Details */
+.transaction-details {
+    padding: 1rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.detail-value {
+    text-align: right;
+}
+
+/* Transaction Modal Styles */
+.transaction-modal .modal-content {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transaction-modal .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transaction-modal .modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transaction-modal .form-control,
+.transaction-modal .form-select {
+    background-color: #2d3748;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.transaction-modal .form-control:focus,
+.transaction-modal .form-select:focus {
+    background-color: #2d3748;
+    border-color: #3182ce;
+    color: #ffffff;
+    box-shadow: 0 0 0 0.25rem rgba(49, 130, 206, 0.25);
+}
+
+.transaction-modal .form-floating > label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.transaction-modal .form-floating > .form-control:focus ~ label,
+.transaction-modal .form-floating > .form-control:not(:placeholder-shown) ~ label,
+.transaction-modal .form-floating > .form-select ~ label {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: #2d3748;
+    padding: 0 0.5rem;
+}
+
+.transaction-modal .type-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+.transaction-modal .type-btn {
+    flex: 1;
+    cursor: pointer;
+    margin: 0;
+}
+
+.transaction-modal .type-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    transition: all 0.2s;
+}
+
+.transaction-modal .income-type .type-content:hover {
+    background: rgba(72, 187, 120, 0.1);
+    border-color: rgba(72, 187, 120, 0.2);
+}
+
+.transaction-modal .expense-type .type-content:hover {
+    background: rgba(229, 62, 62, 0.1);
+    border-color: rgba(229, 62, 62, 0.2);
+}
+
+.transaction-modal .type-btn input[type="radio"] {
+    display: none;
+}
+
+.transaction-modal .type-btn input[type="radio"]:checked + .type-content {
+    border-width: 2px;
+}
+
+.transaction-modal .income-type input[type="radio"]:checked + .type-content {
+    border-color: #48bb78;
+    background: rgba(72, 187, 120, 0.1);
+}
+
+.transaction-modal .expense-type input[type="radio"]:checked + .type-content {
+    border-color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+}
+
+.transaction-modal .form-select option {
+    background-color: #2d3748;
+    color: #ffffff;
+}
+
+/* Fix textarea background */
+.transaction-modal textarea.form-control {
+    background-color: #2d3748;
+    color: #ffffff;
+}
+
+/* Fix placeholder color */
+.transaction-modal .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Fix modal buttons */
+.transaction-modal .modal-btn {
+    padding: 0.5rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.transaction-modal .modal-btn-primary {
+    background-color: #3182ce;
+    color: white;
+}
+
+.transaction-modal .modal-btn-primary:hover {
+    background-color: #2c5282;
+    transform: translateY(-1px);
+}
+
+.transaction-modal .modal-btn-secondary {
+    background-color: #4a5568;
+    color: white;
+}
+
+.transaction-modal .modal-btn-secondary:hover {
+    background-color: #2d3748;
+    transform: translateY(-1px);
+}
+</style>
+
+<script>
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Function to apply date filter
+function applyDateFilter() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        alert('Please select both start and end dates');
+        return;
+    }
+    
+    // Redirect to the search URL with the date parameters
+    window.location.href = `/search?fromdate=${startDate}&todate=${endDate}`;
+}
+
+// Function to view transaction details
+async function viewTransaction(id) {
+    try {
+        const response = await fetch(`/api/transaction/${id}/`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch transaction details');
+        }
+        const data = await response.json();
+        
+        // Format the details HTML
+        const detailsHtml = `
+            <div class="transaction-details">
+                <div class="detail-row">
+                    <span class="detail-label">Description:</span>
+                    <span class="detail-value">${data.add_money}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Amount:</span>
+                    <span class="detail-value ${data.quantity < 0 ? 'text-danger' : 'text-success'}">
+                        ₹${Math.abs(data.quantity).toFixed(2)}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Category:</span>
+                    <span class="detail-value">
+                        <span class="badge bg-secondary">${data.Category}</span>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Type:</span>
+                    <span class="detail-value">
+                        <span class="badge ${data.add_money === 'Income' ? 'bg-success' : 'bg-danger'}">
+                            ${data.add_money}
+                        </span>
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">${new Date(data.Date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    })}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Notes:</span>
+                    <span class="detail-value">${data.notes || 'No notes available'}</span>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('transactionDetails').innerHTML = detailsHtml;
+        
+        // Show the modal
+        const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'Failed to load transaction details',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            iconColor: '#e53e3e',
+            confirmButtonColor: '#3182ce'
+        });
+    }
+}
+
+// Function to delete transaction
+async function deleteTransaction(id) {
+    try {
+        const result = await Swal.fire({
+            title: 'Delete Transaction',
+            text: 'Are you sure you want to delete this transaction?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Delete',
+            cancelButtonText: 'Cancel',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            iconColor: '#e53e3e',
+            confirmButtonColor: '#3182ce',
+            cancelButtonColor: '#2d3748'
+        });
+
+        if (result.isConfirmed) {
+            const response = await fetch(`/api/transaction/${id}/delete/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete transaction');
+            }
+
+            // Show success message
+            await Swal.fire({
+                title: 'Success',
+                text: 'Transaction deleted successfully',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                background: '#1a1a1a',
+                color: '#ffffff',
+                iconColor: '#48bb78',
+                confirmButtonColor: '#3182ce'
+            });
+
+            // Reload the page to show updated data
+            window.location.reload();
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        await Swal.fire({
+            title: 'Error',
+            text: 'Failed to delete transaction',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            iconColor: '#e53e3e',
+            confirmButtonColor: '#3182ce'
+        });
+    }
+}
+
+// Function to export data
+function exportData(type) {
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
+    document.body.appendChild(loadingOverlay);
+    loadingOverlay.classList.add('active');
+    
+    let url;
+    switch(type) {
+        case 'csv':
+            url = '{% url "export_csv" %}';
+            break;
+        case 'excel':
+            url = '{% url "export_excel" %}';
+            break;
+        case 'pdf':
+            url = '{% url "export_pdf" %}';
+            break;
+        default:
+            console.error('Invalid export type');
+            return;
+    }
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Export failed');
+        return response.blob();
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `transactions.${type}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        
+        const successMessage = document.createElement('div');
+        successMessage.className = 'alert alert-success success-animation';
+        successMessage.style.position = 'fixed';
+        successMessage.style.top = '20px';
+        successMessage.style.right = '20px';
+        successMessage.style.zIndex = '9999';
+        successMessage.innerHTML = `Successfully exported as ${type.toUpperCase()}`;
+        document.body.appendChild(successMessage);
+        
+        setTimeout(() => {
+            successMessage.remove();
+        }, 3000);
+    })
+    .catch(error => {
+        console.error('Export error:', error);
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-danger';
+        errorMessage.style.position = 'fixed';
+        errorMessage.style.top = '20px';
+        errorMessage.style.right = '20px';
+        errorMessage.style.zIndex = '9999';
+        errorMessage.innerHTML = 'Failed to export data';
+        document.body.appendChild(errorMessage);
+        
+        setTimeout(() => {
+            errorMessage.remove();
+        }, 3000);
+    })
+    .finally(() => {
+        loadingOverlay.classList.remove('active');
+        setTimeout(() => {
+            loadingOverlay.remove();
+        }, 300);
+    });
+}
+
+// Initialize date inputs with current month range
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
+    document.getElementById('endDate').value = lastDay.toISOString().split('T')[0];
+});
+
+// Add Transaction Form Handling
+document.getElementById('addTransactionForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const submitBtn = document.querySelector('button[type="submit"][form="addTransactionForm"]');
+    const modal = document.getElementById('addTransactionModal');
+    
+    try {
+        // Disable submit button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        
+        // Get form data
+        const formData = new FormData(form);
+        
+        // Send request
+        const response = await fetch('/addmoney_submission/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to add transaction');
+        }
+        
+        // Show success message
+        await Swal.fire({
+            title: 'Success',
+            text: 'Transaction added successfully',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            iconColor: '#48bb78',
+            confirmButtonColor: '#3182ce'
+        });
+        
+        // Close modal and reset form
+        bootstrap.Modal.getInstance(modal).hide();
+        form.reset();
+        
+        // Reload page to show new transaction
+        window.location.reload();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        await Swal.fire({
+            title: 'Error',
+            text: 'Failed to add transaction. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            background: '#1a1a1a',
+            color: '#ffffff',
+            iconColor: '#e53e3e',
+            confirmButtonColor: '#3182ce'
+        });
+    } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Add Transaction';
+    }
+});
+
+// Set default date to today when opening the modal
+document.getElementById('addTransactionModal').addEventListener('show.bs.modal', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('Date').value = today;
+});
+
+// Update amount sign based on transaction type
+document.querySelectorAll('input[name="add_money"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const amountInput = document.getElementById('quantity');
+        const currentValue = Math.abs(parseFloat(amountInput.value) || 0);
+        amountInput.value = this.value === 'Expense' ? -currentValue : currentValue;
+    });
+});
+</script>
+{% endblock %}

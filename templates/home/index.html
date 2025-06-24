@@ -1,0 +1,678 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block main %}
+<div class="container-fluid py-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="glass-card glass-header-card animate-glass-pop">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-chart-line fa-2x me-3"></i>
+                                <div>
+                                    <h2 class="mb-1">Welcome to XPENSO</h2>
+                                    <p class="mb-0 opacity-75">Track your expenses, manage your budget, and achieve your
+                                        financial goals.</p>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="d-flex align-items-center text-white-50 mb-2 fade-in-delay-1">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span>Track daily expenses and income</span>
+                                </div>
+                                <div class="d-flex align-items-center text-white-50 mb-2 fade-in-delay-2">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span>Set and monitor budgets</span>
+                                </div>
+                                <div class="d-flex align-items-center text-white-50 fade-in-delay-3">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <span>Manage your investments</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4 g-3">
+        <div class="col-12 col-md-4">
+            <div class="glass-card stats-card animate-glass-pop">
+                <div class="card-body text-center">
+                    <i class="fas fa-wallet icon-animate icon-balance mb-2"></i>
+                    <h5 class="card-title text-muted mb-3">Total Balance</h5>
+                    <h3 class="mb-0 animated-number {% if total_balance < 0 %}text-danger{% else %}text-success{% endif %}" data-amount="{{ total_balance|default:0 }}">
+                        ₹{{ total_balance|floatformat:2 }}
+                    </h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="glass-card stats-card animate-glass-pop" style="animation-delay:0.12s;">
+                <div class="card-body text-center">
+                    <i class="fas fa-arrow-up icon-animate icon-income mb-2"></i>
+                    <h5 class="card-title text-muted mb-3">Total Income</h5>
+                    <h3 class="mb-0 text-success animated-number" data-amount="{{ total_income|default:0 }}">₹0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="glass-card stats-card animate-glass-pop" style="animation-delay:0.22s;">
+                <div class="card-body text-center">
+                    <i class="fas fa-arrow-down icon-animate icon-expenses mb-2"></i>
+                    <h5 class="card-title text-muted mb-3">Total Expenses</h5>
+                    <h3 class="mb-0 text-danger animated-number" data-amount="{{ total_expenses|default:0 }}">₹{{ total_expenses|default:0 }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget and Investment Overview -->
+    <div class="row mb-4 g-3">
+        <!-- Budget Overview -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-wallet me-2"></i>
+                        Budget Overview
+                    </div>
+                    <a href="/budgets" class="btn btn-sm btn-primary">Manage Budgets</a>
+                </div>
+                <div class="card-body">
+                    {% if budgets %}
+                    {% for budget in budgets %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>{{ budget.category }}</span>
+                            <span>₹{{ budget.spent }}/₹{{ budget.amount }}</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            {% with pct=budget.spent|percentage:budget.amount %}
+                            <div class="progress-bar {% if pct > 100 %}bg-danger{% elif pct > 80 %}bg-warning{% else %}bg-success{% endif %}"
+                                role="progressbar" style="width: {{ pct }}%" aria-valuenow="{{ pct }}" aria-valuemin="0"
+                                aria-valuemax="100">
+                            </div>
+                            {% endwith %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted text-center mb-0">No budgets set. Click "Manage Budgets" to create one.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Investment Summary -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-chart-line me-2"></i>
+                        Investment Summary
+                    </div>
+                    <a href="/investments" class="btn btn-sm btn-primary">Manage Investments</a>
+                </div>
+                <div class="card-body">
+                    {% if investments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for investment in investments %}
+                                <tr class="investment-row animate-fade-in">
+                                    <td>
+                                        <span class="badge type-badge {{ investment.investment_type|lower|slugify }}-badge me-2">
+                                            <i class="{{ investment.investment_type|investment_icon }} me-1"></i>{{ investment.investment_type }}
+                                        </span>
+                                    </td>
+                                    <td class="amount-cell" data-amount="{{ investment.amount_invested }}">₹{{ investment.amount_invested|floatformat:2 }}</td>
+                                    <td>
+                                        <span class="badge status-badge {{ investment.status|lower }}-badge">
+                                            {{ investment.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">No investments recorded. Click "Manage Investments"
+                        to add one.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yearly Expense Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Yearly Expense Breakdown
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if expense_amounts %}
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="chart-container glass-card" style="position: relative; height: 400px; box-shadow: 0 8px 32px 0 rgba(37,99,235,0.18); border-radius: 1.5rem;">
+                                <canvas id="yearlyExpenseChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="chart-legend mt-4 glass-card" style="padding: 1.2em 1.5em; border-radius: 1.2em; box-shadow: 0 4px 18px 0 rgba(99,102,241,0.13);">
+                                {% for category, amount, color in expense_data_combined %}
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="legend-color me-2" style="width: 14px; height: 14px; border-radius: 50%; background-color: {{ color }}; box-shadow: 0 2px 8px {{ color }}44;"></div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-nowrap" style="font-weight:600; color:#fff;">{{ category }}</span>
+                                            <span class="text-muted ms-2" style="font-weight:500;">₹{{ amount|floatformat:1 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">No expenses recorded for this year yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-history me-2"></i>
+                        Recent Transactions
+                    </div>
+                    <a href="/tables" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in page_obj %}
+                                <tr>
+                                    <td>{{ transaction.Date }}</td>
+                                    <td>{{ transaction.Category }}</td>
+                                    <td>
+                                        <span
+                                            class="badge {% if transaction.add_money == 'Income' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ transaction.add_money }}
+                                        </span>
+                                    </td>
+                                    <td>₹{{ transaction.quantity }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Spending Breakdown -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Monthly Spending Breakdown
+                </div>
+                <div class="card-body">
+                    {% if monthly_expenses %}
+                    <div class="row">
+                        {% for expense in monthly_expenses %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>{{ expense.Category }}</span>
+                                <span class="text-muted">₹{{ expense.total }}</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" role="progressbar"
+                                    style="width: {{ expense.total|percentage:total_expenses }}%"
+                                    aria-valuenow="{{ expense.total|percentage:total_expenses }}" aria-valuemin="0"
+                                    aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center mb-0">No expenses recorded this month.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+body {
+    background: #000 !important;
+}
+.glass-card {
+    background: rgba(36,40,47,0.82);
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px 0 #2563eb33, 0 0 0 4px #2563eb22;
+    border: 1.5px solid rgba(255,255,255,0.13);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: #e0e7ef;
+    animation: glassFadeIn 1s cubic-bezier(.4,0,.2,1);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+}
+.glass-header-card {
+    background: linear-gradient(90deg, #2563eb 0%, #36A2EB 30%, #a78bfa 70%, #14b8a6 100%);
+    color: #fff;
+    box-shadow: 0 8px 32px 0 #2563eb33, 0 0 0 6px #a78bfa33, 0 0 24px 0 #14b8a655;
+    border: none;
+    border-radius: 1.5rem;
+    animation: popInProfile 1.1s cubic-bezier(.4,0,.2,1);
+}
+.stats-card {
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: popInProfile 1.1s cubic-bezier(.4,0,.2,1);
+}
+.animate-glass-pop {
+    animation: popInProfile 0.9s cubic-bezier(.4,0,.2,1);
+}
+@keyframes popInProfile {
+    0% { opacity: 0; transform: scale(0.92) translateY(40px); }
+    80% { opacity: 1; transform: scale(1.04) translateY(-8px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.fade-in-delay-1 { animation: fadeIn 1.1s 0.2s both; }
+.fade-in-delay-2 { animation: fadeIn 1.1s 0.4s both; }
+.fade-in-delay-3 { animation: fadeIn 1.1s 0.6s both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.animated-number { font-variant-numeric: tabular-nums; letter-spacing: 1px; }
+.glass-header {
+    background: linear-gradient(90deg, #36A2EB 0%, #a78bfa 100%);
+    color: #fff;
+    border-top-left-radius: 1.7rem;
+    border-top-right-radius: 1.7rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    box-shadow: 0 2px 12px 0 #36A2EB33;
+}
+.card-title, .card-text, h2, h3, h5 {
+    color: #fff !important;
+    text-shadow: 0 2px 8px #232b3b33;
+}
+.text-muted, .opacity-75 {
+    color: #b6c7e3 !important;
+}
+.glass-btn, .btn-primary, .btn-primary:focus {
+    background: linear-gradient(90deg, #36A2EB 0%, #a78bfa 100%) !important;
+    color: #fff !important;
+    border: none;
+    border-radius: 2.2rem;
+    font-weight: 700;
+    box-shadow: 0 6px 24px 0 #36A2EB44;
+    transition: box-shadow 0.18s, background 0.18s, filter 0.18s, transform 0.18s;
+}
+.glass-btn:hover, .btn-primary:hover {
+    background: linear-gradient(90deg, #a78bfa 0%, #36A2EB 100%) !important;
+    color: #fff !important;
+    box-shadow: 0 12px 32px 0 #a78bfa44;
+    filter: brightness(1.08);
+    transform: scale(1.04);
+}
+.badge.type-badge {
+    font-size: 1em;
+    border-radius: 1.2em;
+    padding: 0.5em 1.1em;
+    font-weight: 600;
+    background: linear-gradient(90deg, #36A2EB 0%, #a78bfa 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px 0 #36A2EB33;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+}
+.badge.status-badge.active-badge { background: #22c55e; color: #fff; box-shadow: 0 0 8px #22c55e55; }
+.badge.status-badge.closed-badge { background: #ef4444; color: #fff; box-shadow: 0 0 8px #ef444455; }
+.badge.status-badge.pending-badge { background: #facc15; color: #23272f; box-shadow: 0 0 8px #facc1555; }
+.animate-fade-in { animation: fadeIn 0.8s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
+.animate-slide-up { animation: slideUp 0.8s; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: none; } }
+.amount-cell { font-weight: 700; color: #36d399; font-size: 1.1em; transition: color 0.5s; text-shadow: 0 2px 8px #232b3b33; }
+.amount-cell.animated { animation: popIn 0.7s; }
+@keyframes popIn { 0% { color: #fff; transform: scale(0.8); } 70% { color: #36d399; transform: scale(1.1); } 100% { color: #36d399; transform: scale(1); } }
+.progress { background: rgba(255,255,255,0.18); border-radius: 1em; box-shadow: 0 1px 4px #36A2EB22; }
+.progress-bar { transition: width 1.2s cubic-bezier(.4,2,.6,1); box-shadow: 0 1px 4px #36A2EB22; }
+.legend-color { border: 2px solid #a78bfa; }
+.chart-legend span { color: #e0e7ef; }
+    .sidebar {
+        min-width: 200px;
+        max-width: 250px;
+        height: 100%;
+        padding-top: 2rem;
+        background: #2f2f2f;
+        border-right: 1px solid #e5e7eb;
+    }
+    .sidebar .nav-link {
+        color: #374151;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        margin-bottom: 0.25rem;
+        transition: background 0.2s, color 0.2s;
+    }
+    .sidebar .nav-link.active,
+    .sidebar .nav-link:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+    .sidebar .nav-link i {
+        min-width: 1.5rem;
+        text-align: center;
+    }
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+    .table th {
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 0.8em;
+    }
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    .pagination .page-link {
+        color: var(--primary-color);
+    }
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    .dataTables_wrapper .dataTables_length select {
+        padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #dee2e6;
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        padding: 0.375rem 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #dee2e6;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.375rem 0.75rem;
+        margin: 0 0.25rem;
+        border-radius: 0.375rem;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: white !important;
+    }
+    @media (max-width: 991.98px) {
+        .sidebar {
+            min-width: 100%;
+            max-width: 100%;
+            border-right: none;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+        main.col-12.col-md-9.col-lg-10 {
+            padding-left: 0 !important;
+        }
+    }
+.type-badge.stocks-badge { background: #2563eb; color: #fff; }
+.type-badge.mutual-funds-badge { background: #36A2EB; color: #fff; }
+.type-badge.fixed-deposits-badge { background: #FFC107; color: #181818; }
+.type-badge.bonds-badge { background: #9C27B0; color: #fff; }
+.type-badge.real-estate-badge { background: #F44336; color: #fff; }
+.type-badge.gold-badge { background: #FFD700; color: #181818; }
+.type-badge.cryptocurrency-badge { background: #FF9800; color: #fff; }
+.type-badge.other-badge { background: #795548; color: #fff; }
+.status-badge.active-badge { background: #22c55e; color: #fff; }
+.status-badge.pending-badge { background: #facc15; color: #181818; }
+.status-badge.sold-badge, .status-badge.matured-badge { background: #ef4444; color: #fff; }
+.investment-row { opacity: 0; transform: translateY(20px); animation: fadeInUp 0.7s forwards; }
+.investment-row:nth-child(1) { animation-delay: 0.1s; }
+.investment-row:nth-child(2) { animation-delay: 0.2s; }
+.investment-row:nth-child(3) { animation-delay: 0.3s; }
+.investment-row:nth-child(4) { animation-delay: 0.4s; }
+.investment-row:nth-child(5) { animation-delay: 0.5s; }
+@keyframes fadeInUp {
+    to { opacity: 1; transform: none; }
+}
+.table-hover tbody tr:hover { background: rgba(37,99,235,0.08); transition: background 0.2s; }
+.icon-animate {
+  font-size: 2.4em;
+  margin-bottom: 0.3em;
+  display: block;
+  animation: iconPopFade 1.1s cubic-bezier(.4,0,.2,1);
+  filter: drop-shadow(0 0 12px #2563eb88);
+}
+.icon-balance {
+  color: #36A2EB;
+  background: linear-gradient(90deg, #2563eb 0%, #36A2EB 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px #2563eb88);
+}
+.icon-income {
+  color: #22c55e;
+  background: linear-gradient(90deg, #22c55e 0%, #36d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px #22c55e88);
+}
+.icon-expenses {
+  color: #ef4444;
+  background: linear-gradient(90deg, #ef4444 0%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px #ef444488);
+}
+@keyframes iconPopFade {
+  0% { opacity: 0; transform: scale(0.7) translateY(-12px); }
+  70% { opacity: 1; transform: scale(1.12) translateY(4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+</style>
+
+<!-- Chart.js for Yearly Expense -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'javascript/info.js' %}"></script>
+
+<!-- Scripts -->
+<script>
+    $(document).ready(function () {
+        $('#recentTransactionsTable').DataTable({
+            "pageLength": 5,
+            "ordering": true,
+            "responsive": true,
+            "language": {
+                "search": "Search transactions:",
+                "lengthMenu": "Show _MENU_ entries",
+                "info": "Showing _START_ to _END_ of _TOTAL_ entries",
+                "infoEmpty": "No entries to show",
+                "infoFiltered": "(filtered from _MAX_ total entries)",
+                "zeroRecords": "No matching records found",
+                "paginate": {
+                    "first": "First",
+                    "last": "Last",
+                    "next": "Next",
+                    "previous": "Previous"
+                }
+            },
+            "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            "initComplete": function () {
+                // Add custom classes to DataTables elements
+                $('.dataTables_length select').addClass('form-select');
+                $('.dataTables_filter input').addClass('form-control');
+            }
+        });
+    });
+</script>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate numbers
+    document.querySelectorAll('.animated-number').forEach(function(el) {
+        const amount = Math.abs(Number((el.getAttribute('data-amount') || '0').toString().replace(/,/g, '')));
+        let current = 0;
+        const duration = 1200;
+        const step = Math.ceil(amount / (duration / 16));
+        function animate() {
+            current += step;
+            if (current >= amount) {
+                el.textContent = '₹' + amount.toLocaleString();
+            } else {
+                el.textContent = '₹' + current.toLocaleString();
+                requestAnimationFrame(animate);
+            }
+        }
+        animate();
+    });
+
+    // Yearly Expense Pie Chart
+    var ctx = document.getElementById('yearlyExpenseChart');
+    if (ctx) {
+            new Chart(ctx, {
+            type: 'pie',
+                data: {
+                labels: {{ expense_categories|safe }},
+                    datasets: [{
+                    data: {{ expense_amounts|safe }},
+                    backgroundColor: [
+                        '#6366f1', '#06b6d4', '#f59e42', '#22c55e', '#a21caf',
+                        '#f43f5e', '#fbbf24', '#0ea5e9', '#eab308', '#14b8a6'
+                    ],
+                    borderColor: '#181a20',
+                    borderWidth: 3,
+                    hoverOffset: 18,
+                    hoverBorderColor: '#fff',
+                    hoverBorderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 1400,
+                    easing: 'easeOutElastic'
+                },
+                    plugins: {
+                        legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#e0e7ef',
+                            font: { size: 16, weight: 'bold' },
+                            padding: 24,
+                            usePointStyle: true,
+                            boxWidth: 18,
+                            boxHeight: 18,
+                            borderRadius: 8,
+                            pointStyle: 'circle'
+                        }
+                        },
+                        tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.92)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                        borderColor: '#6366f1',
+                        borderWidth: 2,
+                        padding: 16,
+                        cornerRadius: 10,
+                            displayColors: true,
+                        boxPadding: 8,
+                        usePointStyle: true,
+                            callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                return `₹${value.toLocaleString()} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                layout: { padding: 24 }
+            },
+            plugins: [{
+                id: 'customShadow',
+                beforeDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(99,102,241,0.18)';
+                    ctx.shadowBlur = 24;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 8;
+                },
+                afterDraw: function(chart) {
+                    chart.ctx.restore();
+                }
+            }]
+        });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

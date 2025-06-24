@@ -1,0 +1,138 @@
+<!-- Charts Row -->
+<div class="row mb-4 g-4">
+    <!-- Weekly Expense Chart -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Weekly Expense Breakdown
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-primary active"
+                        data-chart-type="bar">Bar</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-chart-type="pie">Pie</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <canvas id="weeklyExpenseChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Spending Trend -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-chart-line me-2"></i>
+                Daily Spending Trend
+            </div>
+            <div class="card-body">
+                <canvas id="dailyTrendChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Breakdown and Recent Transactions -->
+<div class="row g-4">
+    <!-- Category Breakdown -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fas fa-tags me-2"></i>
+                Category Breakdown
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>% of Total</th>
+                                <th>vs Last Week</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-circle me-2" style="color: {{ category.color }}"></i>
+                                    {{ category.name }}
+                                </td>
+                                <td>₹{{ category.amount }}</td>
+                                <td>{{ category.percentage }}%</td>
+                                <td>
+                                    <span
+                                        class="{% if category.trend > 0 %}text-success{% elif category.trend < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        <i
+                                            class="fas {% if category.trend > 0 %}fa-arrow-up{% elif category.trend < 0 %}fa-arrow-down{% else %}fa-minus{% endif %}"></i>
+                                        {{ category.trend|abs }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-list me-2"></i>
+                    Recent Transactions
+                </div>
+                <a href="/addmoney" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i> Add New
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in addmoney_info %}
+                            <tr>
+                                <td>{{ transaction.Date|date:"M d" }}</td>
+                                <td>{{ transaction.Category }}</td>
+                                <td>
+                                    <span
+                                        class="badge {% if transaction.add_money == 'Income' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ transaction.add_money }}
+                                    </span>
+                                </td>
+                                <td
+                                    class="{% if transaction.add_money == 'Income' %}text-success{% else %}text-danger{% endif %}">
+                                    {% if transaction.add_money == 'Income' %}+{% else %}-{% endif %}₹{{
+                                    transaction.quantity }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pass data to JavaScript
+    window.weeklyData = {
+        dailySpending: {{ daily_spending | safe }},
+    categories: { { categories | safe } }
+};
+</script>

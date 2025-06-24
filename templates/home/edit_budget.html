@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main %}
+<div class="container py-4">
+    <h2 class="mb-4">Edit Budget</h2>
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="budgetName" class="form-label">Budget Name</label>
+                    <input type="text" class="form-control" id="budgetName" name="budgetName" value="{{ budget.name }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="budgetAmount" class="form-label">Budget Amount (₹)</label>
+                    <input type="number" class="form-control" id="budgetAmount" name="budgetAmount" value="{{ budget.amount }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="budgetCategory" class="form-label">Category</label>
+                    <input type="text" class="form-control" id="budgetCategory" name="budgetCategory" value="{{ budget.category }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="budgetPeriod" class="form-label">Budget Period</label>
+                    <select class="form-select" id="budgetPeriod" name="budgetPeriod" required>
+                        <option value="monthly" {% if budget.period == 'monthly' %}selected{% endif %}>Monthly</option>
+                        <option value="yearly" {% if budget.period == 'yearly' %}selected{% endif %}>Yearly</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="{% url 'budgets' %}" class="btn btn-secondary ms-2">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

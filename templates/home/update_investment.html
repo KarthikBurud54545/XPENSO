@@ -1,0 +1,213 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+body {
+    background: linear-gradient(120deg, #1a1a2e 0%, #16213e 100%);
+}
+.form-container {
+    padding: 1.5rem 1rem;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.form-card {
+    width: 100%;
+    max-width: 650px;
+    background: linear-gradient(135deg, rgba(27, 27, 42, 0.6), rgba(30, 30, 50, 0.8));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 2rem;
+    color: #e0e0e0;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    animation: fadeIn 0.8s ease-in-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.form-header h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255,255,255,0.1);
+    background: -webkit-linear-gradient(45deg, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.form-header p {
+    font-size: 0.9rem;
+    color: #a0a0b0;
+}
+.form-label {
+    color: #c0c0d0;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+    font-size: 0.875rem;
+}
+.form-control, .form-select {
+    background-color: rgba(0,0,0,0.2) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 0.6rem !important;
+    padding: 0.6rem 1rem !important;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+.form-control:focus, .form-select:focus {
+    background-color: rgba(0,0,0,0.3) !important;
+    border-color: #a78bfa !important;
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.3) !important;
+}
+::-webkit-calendar-picker-indicator { filter: invert(0.8); }
+
+.returns-preview {
+    background: rgba(0,0,0,0.2);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-left: 3px solid #fb923c;
+}
+#returns_value.positive { color: #4ade80; }
+#returns_value.negative { color: #f87171; }
+#return_rate.positive { color: #4ade80; }
+#return_rate.negative { color: #f87171; }
+
+.btn-custom {
+    padding: 0.6rem 1.25rem;
+    border-radius: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+.btn-primary-custom {
+    background: linear-gradient(45deg, #a78bfa, #c084fc);
+    color: white;
+}
+.btn-primary-custom:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(167, 139, 250, 0.4);
+}
+.btn-secondary-custom {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+}
+.btn-secondary-custom:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+}
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header text-center mb-4">
+            <h2>Update Investment</h2>
+            <p>Make changes to your investment details below.</p>
+        </div>
+        <form method="post" action="{% url 'update_investment' investment.id %}" novalidate autocomplete="off">
+            {% csrf_token %}
+            
+            <div class="md:flex md:gap-4">
+                <div class="w-full md:w-1/2 mb-2">
+                    <label for="investment_type" class="form-label">Investment Type</label>
+                    <select class="form-select" id="investment_type" name="investment_type" required>
+                        {% for type_code, type_name in investment_types %}
+                        <option value="{{ type_code }}" {% if investment.investment_type == type_code %}selected{% endif %}>{{ type_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w-full md:w-1/2 mb-2">
+                    <label for="name" class="form-label">Investment Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ investment.name }}" required>
+                </div>
+            </div>
+
+            <div class="md:flex md:gap-4">
+                <div class="w-full md:w-1/2 mb-2">
+                    <label for="amount_invested" class="form-label">Amount Invested</label>
+                    <input type="number" class="form-control" id="amount_invested" name="amount_invested" value="{{ investment.amount_invested }}" step="0.01" min="0" required>
+                </div>
+                <div class="w-full md:w-1/2 mb-2">
+                    <label for="current_value" class="form-label">Current Value</label>
+                    <input type="number" class="form-control" id="current_value" name="current_value" value="{{ investment.current_value }}" step="0.01" min="0" required>
+                </div>
+            </div>
+            
+            <div class="returns-preview my-3">
+                <div class="flex flex-col sm:flex-row justify-around gap-y-1">
+                    <div class="flex justify-between sm:justify-start items-baseline sm:gap-2">
+                        <h6 class="text-gray-400 text-sm">Returns:</h6>
+                        <h4 id="returns_value" class="font-semibold">₹0.00</h4>
+                    </div>
+                    <div class="flex justify-between sm:justify-start items-baseline sm:gap-2 sm:border-l sm:border-gray-600 sm:pl-4">
+                        <h6 class="text-gray-400 text-sm">Return Rate:</h6>
+                        <h4 id="return_rate" class="font-semibold">0.00%</h4>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="md:flex md:gap-4">
+                 <div class="w-full md:w-1/2 mb-2">
+                    <label for="purchase_date" class="form-label">Purchase Date</label>
+                    <input type="date" class="form-control" id="purchase_date" name="purchase_date" value="{{ investment.purchase_date|date:'Y-m-d' }}" required>
+                </div>
+                <div class="w-full md:w-1/2 mb-2">
+                    <label for="maturity_date" class="form-label">Maturity Date (Optional)</label>
+                    <input type="date" class="form-control" id="maturity_date" name="maturity_date" value="{{ investment.maturity_date|date:'Y-m-d' }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status" required>
+                    {% for status_code, status_name in investment_statuses %}
+                    <option value="{{ status_code }}" {% if investment.status == status_code %}selected{% endif %}>{{ status_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4">
+                <a href="{% url 'investments' %}" class="btn-secondary-custom btn-custom">Cancel</a>
+                <button type="submit" class="btn-primary-custom btn-custom">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInvested = document.getElementById('amount_invested');
+    const currentValue = document.getElementById('current_value');
+    const returnsValue = document.getElementById('returns_value');
+    const returnRate = document.getElementById('return_rate');
+
+    function updateReturns() {
+        const invested = parseFloat(amountInvested.value) || 0;
+        const current = parseFloat(currentValue.value) || 0;
+        const returns = current - invested;
+        const rate = invested ? (returns / invested) * 100 : 0;
+
+        returnsValue.textContent = `₹${returns.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        returnRate.textContent = `${rate.toFixed(2)}%`;
+
+        returnsValue.className = returns >= 0 ? 'font-semibold positive' : 'font-semibold negative';
+        returnRate.className = rate >= 0 ? 'font-semibold positive' : 'font-semibold negative';
+    }
+
+    amountInvested.addEventListener('input', updateReturns);
+    currentValue.addEventListener('input', updateReturns);
+    updateReturns();
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,112 @@
+/* Basic styling for the budgets page */
+
+.container {
+    color: var(--text-color);
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.10);
+    margin-bottom: 1.5rem; /* Increase margin between cards */
+}
+
+.card-header {
+    background-color: var(--navbar-bg);
+    color: var(--text-color);
+    font-weight: 600;
+    border-bottom: 1px solid #23272f;
+    padding: 1rem 1.5rem; /* Adjust padding */
+}
+
+.card-body {
+    padding: 1.5rem; /* Add padding to card body */
+}
+
+.table {
+    color: var(--text-color);
+    background-color: var(--card-bg);
+    margin-bottom: 1rem; /* Add margin below the table */
+}
+
+.table th, .table td {
+    border-top: 1px solid #333;
+    color: var(--text-color);
+    padding: 0.75rem 1.5rem; /* Adjust table cell padding */
+}
+
+.table th {
+    font-weight: 600;
+    border-bottom: 2px solid #333; /* Thicker border for table header */
+}
+
+.table-hover tbody tr:hover {
+    background-color: #2a2a2a;
+}
+
+.form-label {
+    color: var(--text-color) !important;
+    margin-bottom: 0.5rem; /* Add some space below labels */
+}
+
+.form-control, .form-select {
+    background-color: #23272f;
+    color: var(--text-color);
+    border: 1px solid #444;
+    padding: 0.75rem 1rem; /* Adjust form control padding */
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(37,99,235,0.15);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+    padding: 0.75rem 1.5rem; /* Adjust button padding */
+    font-size: 1rem;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    padding: 0.5rem 1rem; /* Adjust outline button padding */
+    font-size: 0.875rem;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.btn-outline-danger {
+    color: var(--danger);
+    border-color: var(--danger);
+    padding: 0.5rem 1rem; /* Adjust outline button padding */
+    font-size: 0.875rem;
+}
+
+.btn-outline-danger:hover {
+    background-color: var(--danger);
+    color: #fff;
+}
+
+/* Specific styling for the chart container */
+#budgetChart {
+    margin-top: 1.5rem; /* Add space above the chart */
+}
+
+/* Style for the muted text */
+.text-muted {
+    color: var(--muted-text) !important;
+} 

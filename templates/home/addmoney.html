@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block sidebar %}{% endblock %}
+{% block main %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="glass-card shadow-lg border-0 animate-fade-in">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold text-primary">Add Transaction</h2>
+                        <p class="text-muted">Record your income or expense</p>
+                    </div>
+
+                    <form method="post" action="/addmoney_submission/">
+                        {% csrf_token %}
+                        
+                        <!-- Transaction Type -->
+                        <div class="mb-4">
+                            <label class="form-label">Transaction Type</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="add_money" id="expense" value="Expense" checked required onclick="updateCategoryOptions()">
+                                    <label class="form-check-label" for="expense">
+                                        <i class="fas fa-arrow-down text-danger me-1"></i>Expense
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="add_money" id="income" value="Income" required onclick="updateCategoryOptions()">
+                                    <label class="form-check-label" for="income">
+                                        <i class="fas fa-arrow-up text-success me-1"></i>Income
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="mb-4">
+                            <label for="quantity" class="form-label">Amount (₹)</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Amount" required>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="mb-4">
+                            <label for="Date" class="form-label">Transaction Date</label>
+                            <input type="date" class="form-control" id="Date" name="Date" required>
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-4">
+                            <label for="CategoryInput" class="form-label">Category</label>
+                            <div class="custom-select-container">
+                                <div class="custom-select-display form-control" id="CategoryDisplay">Select a category</div>
+                                <input type="hidden" name="Category" id="CategoryInput" required>
+                                <ul class="custom-select-options" id="CategoryOptions">
+                                    <!-- Options will be populated by JavaScript -->
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid">
+                            <button type="submit" class="glass-btn btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Save Transaction
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const expenseCategories = [
+    { value: '', text: 'Select a category' },
+    { value: 'Food & Groceries', text: 'Food & Groceries' },
+    { value: 'Transport', text: 'Transport' },
+    { value: 'Utilities', text: 'Utilities' },
+    { value: 'Rent', text: 'Rent' },
+    { value: 'Shopping', text: 'Shopping' },
+    { value: 'Health', text: 'Health' },
+    { value: 'Entertainment', text: 'Entertainment' },
+    { value: 'Education', text: 'Education' },
+    { value: 'Personal Care', text: 'Personal Care' },
+    { value: 'Subscriptions', text: 'Subscriptions' },
+    { value: 'Others', text: 'Others' },
+    { value: 'Investments', text: 'Investments' },
+    { value: 'Budgets', text: 'Budgets' }
+];
+const incomeCategories = [
+    { value: '', text: 'Select a category' },
+    { value: 'Salary', text: 'Salary' },
+    { value: 'Business', text: 'Business' },
+    { value: 'Investment', text: 'Investment' },
+    { value: 'Freelancing', text: 'Freelancing' },
+    { value: 'Rental Income', text: 'Rental Income' },
+    { value: 'Interest', text: 'Interest' },
+    { value: 'Dividends', text: 'Dividends' },
+    { value: 'Gift', text: 'Gift' },
+    { value: 'Other Income', text: 'Other Income' },
+    { value: 'Investments', text: 'Investments' },
+    { value: 'Budgets', text: 'Budgets' }
+];
+
+function updateCategoryOptions() {
+    const isExpense = document.getElementById('expense').checked;
+    const categoryOptionsList = document.getElementById('CategoryOptions'); // Get the ul element
+    const categoryDisplay = document.getElementById('CategoryDisplay'); // Get the display div
+    const categoryInput = document.getElementById('CategoryInput'); // Get the hidden input
+
+    // Remove all current options
+    categoryOptionsList.innerHTML = '';
+
+    // Add new options
+    const categories = isExpense ? expenseCategories : incomeCategories;
+    categories.forEach(cat => {
+        const optionItem = document.createElement('li'); // Create li element
+        optionItem.textContent = cat.text;
+        optionItem.dataset.value = cat.value; // Store value in a data attribute
+        if (cat.value === '') {
+            optionItem.classList.add('placeholder-option'); // Add a class for styling the placeholder
+        }
+        optionItem.addEventListener('click', () => {
+            // Handle option selection
+            categoryDisplay.textContent = cat.text;
+            categoryInput.value = cat.value;
+            categoryOptionsList.style.display = 'none'; // Hide options after selection
+        });
+        categoryOptionsList.appendChild(optionItem);
+    });
+
+    // Set initial display text to the placeholder
+    categoryDisplay.textContent = 'Select a category';
+    categoryInput.value = '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    updateCategoryOptions();
+
+    // Add event listener to toggle dropdown visibility
+    document.getElementById('CategoryDisplay').addEventListener('click', () => {
+        const optionsList = document.getElementById('CategoryOptions');
+        optionsList.style.display = optionsList.style.display === 'block' ? 'none' : 'block';
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        const customSelectContainer = document.querySelector('.custom-select-container');
+        if (!customSelectContainer.contains(event.target) && event.target !== document.getElementById('CategoryDisplay')) {
+            document.getElementById('CategoryOptions').style.display = 'none';
+        }
+    });
+});
+</script>
+
+<style>
+body { background: #000 !important; }
+.glass-card {
+  background: rgba(255,255,255,0.13);
+  border-radius: 1.7rem;
+  box-shadow: 0 8px 32px 0 rgba(37,99,235,0.18), 0 0 0 4px #2563eb22;
+  border: 1.5px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  color: #e0e7ef;
+  animation: glassFadeIn 1s cubic-bezier(.4,0,.2,1);
+  position: relative;
+  overflow: hidden;
+}
+@keyframes glassFadeIn { from { opacity: 0; transform: translateY(32px) scale(0.98); } to { opacity: 1; transform: none; } }
+.glass-header {
+  background: linear-gradient(90deg, #36A2EB 0%, #a78bfa 100%);
+  color: #fff;
+  border-top-left-radius: 1.7rem;
+  border-top-right-radius: 1.7rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  box-shadow: 0 2px 12px 0 #36A2EB33;
+}
+.form-label {
+    color: #ffffff !important; /* Set standard label color to white for dark background */
+    background-color: transparent !important; /* Ensure label background is transparent */
+}
+
+.form-floating > label {
+  color: #000000 !important; /* Keep original for form-floating labels */
+  background-color: transparent !important; /* Ensure label background is transparent */
+}
+
+.form-floating label[for="Date"] {
+    color: #000000 !important;
+    background-color: transparent !important; /* Ensure date label background is transparent */
+}
+
+/* Specific color for the Category label (standard position) */
+label[for="CategoryInput"].form-label {
+    color: #ffffff !important; /* Ensure Category label color is white */
+}
+
+.form-control {
+    background-color: transparent !important;
+    color: #ffffff; /* Set text color to white for readability on dark background */
+}
+
+.form-select {
+    background-color: transparent !important;
+    color: #ffffff; /* Set text color to white for readability on dark background */
+}
+
+.form-check-input:checked {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+.form-floating > .form-control:focus ~ label,
+.form-floating > .form-control:not(:placeholder-shown) ~ label {
+    color: var(--bs-primary);
+}
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Custom Select Styling */
+.custom-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select-display {
+    cursor: pointer;
+    padding: 0.375rem 2.25rem 0.375rem 0.75rem; /* Matches form-control padding */
+    line-height: 1.5; /* Matches form-control line-height */
+    background-color: transparent !important;
+    border: 1px solid #ced4da; /* Add a border to look like an input */
+    border-radius: 0.25rem; /* Add rounded corners */
+    /* Default text color for placeholder */
+    color: #aaaaaa !important; /* Slightly darker grey for placeholder */
+    /* Appearance none removes default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3csvg%3e"); /* Custom arrow - changed color to white */
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+
+.custom-select-display.option-selected {
+    color: #ffffff !important; /* Text color when an option is selected - set to white */
+}
+
+/* Custom Select Options List Styling */
+.custom-select-options {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: calc(100% + 1px); /* Position below the display, account for border */
+    left: 0;
+    right: 0;
+    z-index: 2; /* Ensure it's above other content */
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background-color: #ffffff !important; /* Set options list background to white */
+    border: 1px solid #ced4da;
+    border-top: none;
+    border-radius: 0 0 0.25rem 0.25rem;
+    max-height: 200px; /* Limit height and add scrolling */
+    overflow-y: auto;
+}
+
+.custom-select-options li {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    color: #000000; /* Text color for options */
+    background-color: transparent !important; /* Ensure option background is transparent */
+}
+
+.custom-select-options li:hover {
+    background-color: #f8f9fa; /* Light background on hover */
+}
+
+.custom-select-options li.placeholder-option {
+    font-style: italic;
+    color: #6c757d; /* Muted color for placeholder */
+}
+</style>
+{% endblock %}

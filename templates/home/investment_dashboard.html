@@ -1,0 +1,670 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block extra_css %}
+<style>
+    .dashboard-bg {
+        background: #181818;
+        min-height: 100vh;
+        width: 100%;
+        padding-bottom: 2rem;
+    }
+    .card {
+        background: #23272f;
+        color: #fff;
+        border-radius: 1.25rem;
+        border: none;
+    }
+    .table-hover > tbody > tr:hover {
+        color: #fff;
+        background-color: #2a2e37;
+    }
+    .progress {
+        background-color: #444;
+    }
+    .investment-glass-card {
+        background: rgba(36, 44, 62, 0.75);
+        backdrop-filter: blur(16px);
+        border-radius: 2rem;
+        box-shadow: 0 8px 32px 0 rgba(37,99,235,0.13);
+        border: 1.5px solid rgba(54,211,153,0.07);
+    }
+    .stat-card {
+        background: rgba(255,255,255,0.04);
+        border-radius: 1.2rem;
+        padding: 1.2rem 1.1rem;
+        box-shadow: 0 2px 12px 0 rgba(37,99,235,0.10);
+        text-align: center;
+        transition: transform 0.22s, box-shadow 0.22s, background 0.22s;
+        border: 1.5px solid rgba(54,211,153,0.07);
+    }
+    .stat-card:hover {
+        transform: translateY(-4px) scale(1.03);
+        box-shadow: 0 8px 32px 0 rgba(37,99,235,0.13);
+        background: linear-gradient(120deg, rgba(37,99,235,0.13) 0%, rgba(54,211,153,0.10) 100%);
+    }
+    .stat-label {
+        font-size: 1.05rem;
+        color: #a0aec0;
+        margin-bottom: 0.3rem;
+    }
+    .stat-value {
+        font-size: 2.1rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.01em;
+        transition: color 0.2s;
+    }
+    .investment-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(37,99,235,0.10);
+    }
+    .bg-gradient-primary {
+        background: linear-gradient(90deg, #38bdf8 0%, #a78bfa 100%) !important;
+        color: #fff !important;
+        font-weight: 600;
+        border: none;
+    }
+    .stat-extra { color: #fbbf24; font-size: 1.05rem; margin-top: 0.2rem; }
+    .bg-dark { background: #23272f !important; }
+    @media (max-width: 767px) {
+        .stat-row { flex-direction: column; align-items: flex-start !important; }
+        .stat-value { margin-top: 0.3rem; }
+    }
+    body, .dashboard-bg { font-family: 'Inter', 'Roboto', Arial, sans-serif; }
+    .glass-header-card {
+        background: linear-gradient(120deg, rgba(56,189,248,0.18) 0%, rgba(167,139,250,0.18) 100%);
+        border-radius: 2rem;
+        box-shadow: 0 8px 32px 0 rgba(37,99,235,0.13);
+        border: 1.5px solid rgba(54,211,153,0.07);
+        margin-bottom: 2rem;
+    }
+    .btn-glass {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        border-radius: 2rem;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        font-size: 1.13rem;
+        margin-right: 0.7rem;
+        margin-bottom: 0.7rem;
+        box-shadow: 0 2px 12px 0 rgba(56,189,248,0.10);
+        transition: background 0.22s, color 0.22s, transform 0.18s, box-shadow 0.18s;
+        color: #fff;
+        cursor: pointer;
+        outline: none;
+    }
+    .btn-edit {
+        background: linear-gradient(90deg, #2563eb 0%, #36A2EB 100%);
+    }
+    .btn-edit:hover {
+        background: linear-gradient(90deg, #36A2EB 0%, #2563eb 100%);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 4px 24px 0 #2563eb55;
+    }
+    .btn-delete {
+        background: linear-gradient(90deg, #ef4444 0%, #be123c 100%);
+    }
+    .btn-delete:hover {
+        background: linear-gradient(90deg, #be123c 0%, #ef4444 100%);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 4px 24px 0 #ef444455;
+    }
+    .btn-back {
+        background: linear-gradient(90deg, #23272f 0%, #31344e 100%);
+    }
+    .btn-back:hover {
+        background: linear-gradient(90deg, #31344e 0%, #23272f 100%);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 4px 24px 0 #31344e55;
+    }
+    .btn-export {
+        background: linear-gradient(90deg, #22c55e 0%, #36d399 100%);
+    }
+    .btn-export:hover {
+        background: linear-gradient(90deg, #36d399 0%, #22c55e 100%);
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 4px 24px 0 #22c55e55;
+    }
+    .btn-csv {
+        background: linear-gradient(90deg, #fbbf24 0%, #f59e42 100%);
+        color: #181818 !important;
+    }
+    .btn-csv:hover {
+        background: linear-gradient(90deg, #f59e42 0%, #fbbf24 100%);
+        color: #181818 !important;
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 4px 24px 0 #fbbf2455;
+    }
+    .btn-glass i {
+        font-size: 1.25em;
+        vertical-align: middle;
+    }
+    .d-flex.gap-2.flex-wrap {
+        gap: 1.1rem !important;
+    }
+    @media (max-width: 767px) {
+        .d-flex.gap-2.flex-wrap { flex-direction: column !important; gap: 0.7rem !important; }
+        .btn-glass { width: 100%; justify-content: center; }
+    }
+    .stats-glass-animate .stat-appear {
+        opacity: 0;
+        transform: translateY(24px);
+        animation: fadeInUpGlass 0.7s cubic-bezier(.4,0,.2,1) forwards;
+    }
+    .stats-glass-animate .stat-appear:nth-child(1) { animation-delay: 0.05s; }
+    .stats-glass-animate .stat-appear:nth-child(2) { animation-delay: 0.10s; }
+    .stats-glass-animate .stat-appear:nth-child(3) { animation-delay: 0.15s; }
+    .stats-glass-animate .stat-appear:nth-child(4) { animation-delay: 0.20s; }
+    .stats-glass-animate .stat-appear:nth-child(5) { animation-delay: 0.25s; }
+    .stats-glass-animate .stat-appear:nth-child(6) { animation-delay: 0.30s; }
+    .stats-glass-animate .stat-appear:nth-child(7) { animation-delay: 0.35s; }
+    .stats-glass-animate .stat-appear:nth-child(8) { animation-delay: 0.40s; }
+    .stats-glass-animate .stat-appear:nth-child(9) { animation-delay: 0.45s; }
+    .stats-glass-animate .stat-appear:nth-child(10) { animation-delay: 0.50s; }
+    .stats-glass-animate .stat-appear:nth-child(11) { animation-delay: 0.55s; }
+    .stats-glass-animate .stat-appear:nth-child(12) { animation-delay: 0.60s; }
+    @keyframes fadeInUpGlass {
+        to { opacity: 1; transform: none; }
+    }
+    #investmentValueChart {
+        min-height: 300px !important;
+        height: 300px !important;
+    }
+    .btn-group .btn {
+        margin-right: 0.25rem;
+        border-radius: 50%;
+        width: 2.2rem;
+        height: 2.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .btn-group .btn:last-child { margin-right: 0; }
+    .btn-group .btn.active, .btn-group .btn:focus {
+        box-shadow: 0 0 0 2px #36A2EB55;
+        background: #23272f;
+        color: #36A2EB;
+    }
+    .chart-type-group {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 1.2rem;
+        align-items: center;
+        justify-content: flex-start;
+        margin: 0.7rem 0 1.2rem 0;
+    }
+    .chart-type-group .btn {
+        border-radius: 2rem !important;
+        padding: 0.7rem 2.1rem 0.7rem 1.5rem !important;
+        display: flex !important;
+        align-items: center !important;
+        font-size: 1.15rem !important;
+        font-weight: 700 !important;
+        gap: 0.7rem !important;
+        border: none !important;
+        color: #fff !important;
+        box-shadow: 0 4px 16px 0 rgba(0,0,0,0.10) !important;
+        transition: background 0.18s, color 0.18s, box-shadow 0.18s, filter 0.18s !important;
+        min-width: 120px !important;
+        width: auto !important;
+        height: auto !important;
+        justify-content: flex-start !important;
+    }
+    #lineChartBtn { background: #2563eb !important; }
+    #areaChartBtn { background: #22c55e !important; }
+    #pointsChartBtn { background: #0ea5e9 !important; }
+    #minimalistChartBtn { background: #64748b !important; }
+    #gradientChartBtn { background: #fbbf24 !important; color: #23272f !important; }
+    .chart-type-group .btn:hover, .chart-type-group .btn.active, .chart-type-group .btn:focus {
+        box-shadow: 0 0 0 4px #fff3 !important;
+        filter: brightness(1.12) !important;
+        outline: none !important;
+    }
+    .chart-type-group .btn i {
+        font-size: 1.3em !important;
+        margin-right: 0.7em !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-bg">
+    <!-- Header Card -->
+    <div class="container-fluid mb-4 pt-4">
+        <div class="card shadow-lg mb-4">
+            <div class="card-body d-flex align-items-center">
+                <i class="fas fa-chart-pie fa-2x me-3 text-primary"></i>
+                <h4 class="m-0">Investment Dashboard</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                {% if investment %}
+                <!-- Modern Individual Investment Analytics -->
+                <div class="glass-header-card mb-4 p-4 d-flex align-items-center justify-content-between flex-wrap">
+                    <div class="d-flex align-items-center flex-wrap">
+                        <span class="icon-glass me-3"><i class="fas fa-coins"></i></span>
+                        <h2 class="fw-bold text-white mb-0 me-3" style="font-size:2.2rem;">{{ investment.name }}</h2>
+                        <span class="badge-pill-type">{{ investment.get_investment_type_display }}</span>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap mt-3 mt-md-0">
+                        <a href="/update_investment/{{ investment.id }}/" class="btn-glass btn-edit"><i class="fas fa-edit"></i> Edit</a>
+                        <a href="/delete_investment/{{ investment.id }}/" class="btn-glass btn-delete"><i class="fas fa-trash"></i> Delete</a>
+                        <a href="/investment_dashboard/0/" class="btn-glass btn-back"><i class="fas fa-arrow-left"></i> Back</a>
+                        <button class="btn-glass btn-export" onclick="window.print()"><i class="fas fa-file-pdf"></i> PDF</button>
+                        <a href="{% url 'export_investment_csv' investment.id %}" class="btn-glass btn-csv"><i class="fas fa-file-csv"></i> CSV</a>
+                    </div>
+                </div>
+                <div class="glass-card p-4 mb-4 stats-glass-animate">
+                    <div class="row g-4">
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-wallet"></i></span> <span class="stat-label">Amount Invested</span> <span class="stat-value">₹{{ investment.amount_invested|floatformat:2 }}</span></div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-chart-line"></i></span> <span class="stat-label">Current Value</span> <span class="stat-value">₹{{ investment.current_value|floatformat:2 }}</span></div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-arrow-up"></i></span> <span class="stat-label">Returns</span> <span class="stat-value {% if investment_returns >= 0 %}text-success{% else %}text-danger{% endif %}">₹{{ investment_returns|floatformat:2 }}</span></div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-percentage"></i></span> <span class="stat-label">Return Rate</span> <span class="stat-value text-info">{{ total_return_rate|floatformat:2 }}%</span></div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-shield-alt"></i></span> <span class="stat-label">Risk Score</span> <span class="stat-value text-warning">{{ risk_score|floatformat:2 }}</span></div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-check-circle"></i></span> <span class="stat-label">Status</span> <span class="stat-value"><span class="badge {% if investment.get_status_display == 'Active' %}bg-success{% else %}bg-secondary{% endif %}">{{ investment.get_status_display }}</span></span></div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-calendar-alt"></i></span> <span class="stat-label">Purchase Date</span> <span class="stat-value">{{ investment.purchase_date|date:"M d, Y" }}</span></div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-hourglass-half"></i></span> <span class="stat-label">Maturity Date</span> <span class="stat-value">{{ investment.maturity_date|date:"M d, Y"|default:"N/A" }}</span></div>
+                        </div>
+                        {% if investment.notes %}
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-sticky-note"></i></span> <span class="stat-label">Notes</span> <span class="stat-value stat-extra">{{ investment.notes }}</span></div>
+                        </div>
+                        {% endif %}
+                        {% if investment.sector %}
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-industry"></i></span> <span class="stat-label">Sector</span> <span class="stat-value stat-extra">{{ investment.sector }}</span></div>
+                        </div>
+                        {% endif %}
+                        {% if investment.dividend_yield %}
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-coins"></i></span> <span class="stat-label">Dividend Yield</span> <span class="stat-value stat-extra">{{ investment.dividend_yield }}%</span></div>
+                        </div>
+                        {% endif %}
+                        {% if investment.pe_ratio %}
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-balance-scale"></i></span> <span class="stat-label">PE Ratio</span> <span class="stat-value stat-extra">{{ investment.pe_ratio }}</span></div>
+                        </div>
+                        {% endif %}
+                        {% if investment.quantity %}
+                        <div class="col-md-6 col-12">
+                            <div class="stat-glass stat-appear"><span class="stat-icon"><i class="fas fa-layer-group"></i></span> <span class="stat-label">Quantity</span> <span class="stat-value stat-extra">{{ investment.quantity }}</span></div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <!-- Value Over Time Chart -->
+                <div class="mt-5">
+                    <div class="card p-4 bg-dark rounded-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">Value Over Time</h5>
+                            <div class="btn-group chart-type-group flex-row" role="group" aria-label="Chart Type Selector">
+                                <button id="lineChartBtn" class="btn" title="Line Chart">
+                                    <i class="fas fa-chart-line"></i> <span class="ms-2">Line</span>
+                                </button>
+                                <button id="areaChartBtn" class="btn" title="Area Chart">
+                                    <i class="fas fa-area-chart"></i> <span class="ms-2">Area</span>
+                                </button>
+                                <button id="pointsChartBtn" class="btn" title="Points Only">
+                                    <i class="fas fa-braille"></i> <span class="ms-2">Points</span>
+                                </button>
+                                <button id="minimalistChartBtn" class="btn" title="Minimalist">
+                                    <i class="fas fa-minus"></i> <span class="ms-2">Minimalist</span>
+                                </button>
+                                <button id="gradientChartBtn" class="btn" title="Gradient">
+                                    <i class="fas fa-fill-drip"></i> <span class="ms-2">Gradient</span>
+                                </button>
+                            </div>
+                        </div>
+                        <canvas id="investmentValueChart" height="120"></canvas>
+                    </div>
+                </div>
+                <!-- Removed Performance Over Time, Sub-holdings Breakdown, and Related Market News sections here -->
+                {% else %}
+                <!-- Portfolio-wide Analytics (existing content) -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="card shadow-lg h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-uppercase">Portfolio Value</h6>
+                                <h3 class="card-text text-primary">₹{{ total_portfolio_value|floatformat:2 }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-lg h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-uppercase">Total Returns</h6>
+                                <h3 class="card-text {% if total_returns >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ₹{{ total_returns|floatformat:2 }} ({{ total_return_rate|floatformat:2 }}%)
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Performance Chart -->
+                <div class="card shadow-lg mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Portfolio Performance</h5>
+                        <canvas id="performanceChart" height="150"></canvas>
+                    </div>
+                </div>
+                <!-- Risk Analysis Table -->
+                <div class="card shadow-lg">
+                    <div class="card-body">
+                        <h5 class="card-title">Risk Analysis by Investment Type</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" style="color: #fff;">
+                                <thead>
+                                    <tr>
+                                        <th>Investment Type</th>
+                                        <th>Total Value</th>
+                                        <th>Total Returns</th>
+                                        <th>Risk Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for type, value in type_distribution.items %}
+                                    <tr>
+                                        <td>{{ type }}</td>
+                                        <td>₹{{ value|floatformat:2 }}</td>
+                                        <td class="{% if type_returns.type >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                            ₹{{ type_returns.type|floatformat:2 }}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {{ type_risk.type|floatformat:2 }}
+                                                <div class="progress ms-2" style="width: 60px; height: 4px;">
+                                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                                         style="width: {{ type_risk.type|mul:10|floatformat:0 }}%; transition: width 1s cubic-bezier(.4,2,.6,1);">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% if not investment %}
+            <div class="col-lg-4">
+                <!-- Asset Allocation Chart -->
+                <div class="card shadow-lg h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Asset Allocation</h5>
+                        <canvas id="assetAllocationChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add these above your script block -->
+{{ monthly_trends_labels|json_script:"labels-data" }}
+{{ monthly_trends_values|json_script:"values-data" }}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Asset Allocation Chart
+    const assetChart = document.getElementById('assetAllocationChart');
+    if (assetChart) {
+        const assetCtx = assetChart.getContext('2d');
+        new Chart(assetCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ asset_labels|default:'[]'|safe }},
+                datasets: [{
+                    label: 'Asset Allocation',
+                    data: {{ asset_values|default:'[]'|safe }},
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                    ],
+                    borderColor: '#23272f',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#fff' }
+                    }
+                }
+            }
+        });
+    }
+    // Performance Chart
+    const perfChart = document.getElementById('performanceChart');
+    if (perfChart) {
+        const perfCtx = perfChart.getContext('2d');
+        new Chart(perfCtx, {
+            type: 'line',
+            data: {
+                labels: {{ performance_labels|default:'[]'|safe }},
+                datasets: [{
+                    label: 'Portfolio Value',
+                    data: {{ performance_values|default:'[]'|safe }},
+                    fill: true,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+    // Individual Investment Performance Chart
+    const indivChart = document.getElementById('investmentPerformanceChart');
+    if (indivChart) {
+        let chartLabels = {{ monthly_trends_labels|default:'[]'|safe }};
+        if (!Array.isArray(chartLabels)) chartLabels = [];
+        let chartData = {{ monthly_trends_values|default:'[]'|safe }};
+        if (!Array.isArray(chartData)) chartData = [];
+        const ctx = indivChart.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [{
+                    label: 'Value',
+                    data: chartData,
+                    fill: true,
+                    borderColor: '#36A2EB',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                }
+            }
+        });
+    }
+    // Value Over Time Chart with toggle
+    const valueChart = document.getElementById('investmentValueChart');
+    let chartInstance = null;
+    function renderValueChart(style) {
+        let chartLabels = JSON.parse(document.getElementById('labels-data').textContent);
+        let chartData = JSON.parse(document.getElementById('values-data').textContent);
+        if (chartInstance) chartInstance.destroy();
+        const ctx = valueChart.getContext('2d');
+        let gradient = ctx.createLinearGradient(0, 0, 0, valueChart.height);
+        gradient.addColorStop(0, 'rgba(54, 162, 235, 0.35)');
+        gradient.addColorStop(1, 'rgba(54, 162, 235, 0.02)');
+        let strongGradient = ctx.createLinearGradient(0, 0, 0, valueChart.height);
+        strongGradient.addColorStop(0, '#36A2EB');
+        strongGradient.addColorStop(1, '#23272f');
+        let dataset = {
+            label: 'Value',
+            data: chartData,
+            borderColor: '#36A2EB',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            fill: false,
+            tension: 0.4,
+            borderWidth: 3,
+            pointRadius: 4,
+            pointBackgroundColor: '#36A2EB',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7,
+            segment: {
+                borderDash: [],
+                borderCapStyle: 'round',
+                borderJoinStyle: 'round',
+            },
+        };
+        if (style === 'area') {
+            dataset.fill = true;
+            dataset.backgroundColor = gradient;
+            dataset.tension = 0.5;
+            dataset.borderWidth = 4;
+            dataset.pointRadius = 6;
+            dataset.pointBackgroundColor = '#fff';
+            dataset.pointBorderColor = '#36A2EB';
+            dataset.pointBorderWidth = 3;
+        } else if (style === 'points') {
+            dataset.showLine = false;
+            dataset.fill = false;
+            dataset.pointRadius = 8;
+            dataset.pointBackgroundColor = '#36A2EB';
+            dataset.pointBorderColor = '#fff';
+            dataset.pointBorderWidth = 3;
+        } else if (style === 'minimalist') {
+            dataset.borderColor = '#fff';
+            dataset.backgroundColor = 'rgba(255,255,255,0.1)';
+            dataset.pointRadius = 0;
+            dataset.tension = 0;
+            dataset.borderWidth = 2;
+        } else if (style === 'gradient') {
+            dataset.fill = true;
+            dataset.backgroundColor = strongGradient;
+            dataset.borderColor = '#36A2EB';
+            dataset.tension = 0.5;
+            dataset.borderWidth = 5;
+            dataset.pointRadius = 7;
+            dataset.pointBackgroundColor = '#fff';
+            dataset.pointBorderColor = '#36A2EB';
+            dataset.pointBorderWidth = 3;
+        } else if (style === 'line') {
+            dataset.fill = false;
+            dataset.backgroundColor = 'rgba(54, 162, 235, 0.2)';
+            dataset.tension = 0.4;
+            dataset.borderWidth = 3;
+            dataset.pointRadius = 4;
+            dataset.pointBackgroundColor = '#36A2EB';
+            dataset.pointBorderColor = '#fff';
+            dataset.pointBorderWidth = 2;
+        }
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartLabels,
+                datasets: [dataset]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true },
+                    zoom: {
+                        pan: { enabled: true, mode: 'xy' },
+                        zoom: { enabled: true, mode: 'xy' }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#fff' },
+                        grid: { color: 'rgba(255,255,255,0.1)' }
+                    }
+                },
+                animation: {
+                    duration: 1200,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    if (valueChart) {
+        renderValueChart('line');
+        document.getElementById('lineChartBtn').onclick = function() { renderValueChart('line'); };
+        document.getElementById('areaChartBtn').onclick = function() { renderValueChart('area'); };
+        document.getElementById('pointsChartBtn').onclick = function() { renderValueChart('points'); };
+        document.getElementById('minimalistChartBtn').onclick = function() { renderValueChart('minimalist'); };
+        document.getElementById('gradientChartBtn').onclick = function() { renderValueChart('gradient'); };
+    }
+});
+</script>
+{% endblock %} 

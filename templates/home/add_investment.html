@@ -1,0 +1,295 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container min-vh-100 d-flex align-items-center justify-content-center" style="padding-top: 2rem; padding-bottom: 2rem;">
+    <div class="row w-100 justify-content-center">
+        <div class="col-lg-7 col-md-10">
+            <div class="add-investment-glass-card" style="background: #181f2a !important; backdrop-filter: none !important; border-radius: 2.2rem; box-shadow: 0 8px 32px 0 rgba(37,99,235,0.18), 0 0 0 4px #2563eb22; border: 1.5px solid #232b3b;">
+                <div style="height: 6px; background: linear-gradient(90deg, #2563eb 0%, #36A2EB 100%); border-top-left-radius: 2.2rem; border-top-right-radius: 2.2rem;"></div>
+                <div class="row g-0 align-items-center justify-content-center" style="min-height: 60vh;">
+                    <div class="col-12 p-4 p-md-5">
+                        <div class="mb-4 text-center">
+                            <div class="add-investment-title" style="color:#fff; font-size:2.3rem; font-weight:800;">Add Investment</div>
+                            <div class="add-investment-subtitle" style="color:#a3bffa; font-size:1.08rem; font-weight:500;">Track your investment details</div>
+                        </div>
+                        {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %}" role="alert">
+                                {{ message }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <form method="post" action="{% url 'add_investment' %}" class="needs-validation add-investment-form" novalidate autocomplete="off">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="investment_type" class="form-label" style="color:#e0e7ef !important;">Investment Type</label>
+                                <select class="form-select" id="investment_type" name="investment_type" required style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">
+                                    <option value="">Select investment type</option>
+                                    {% for type_code, type_name in investment_types %}
+                                    <option value="{{ type_code }}">{{ type_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback" style="color:#dc3545;">Please select an investment type.</div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="name" class="form-label" style="color:#e0e7ef !important;">Investment Name</label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="e.g., Reliance Industries Stock, HDFC Bank FD" required style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">
+                                <div class="invalid-feedback" style="color:#dc3545;">Please enter the investment name.</div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <label for="amount_invested" class="form-label" style="color:#e0e7ef !important;">Amount Invested (₹)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">₹</span>
+                                        <input type="number" class="form-control" id="amount_invested" name="amount_invested" step="0.01" min="0" required style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">
+                                    </div>
+                                    <div class="invalid-feedback" style="color:#dc3545;">Please enter the invested amount.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="current_value" class="form-label" style="color:#e0e7ef !important;">Current Value (₹)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text" style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">₹</span>
+                                        <input type="number" class="form-control" id="current_value" name="current_value" step="0.01" min="0" required style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">
+                                    </div>
+                                    <div class="invalid-feedback" style="color:#dc3545;">Please enter the current value.</div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="row text-center">
+                                    <div class="col">
+                                        <div class="text-muted" style="color:#6c757d !important;">Returns</div>
+                                        <div id="returns_value" class="fw-bold" style="color:#e0e7ef;">₹0.00</div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="text-muted" style="color:#6c757d !important;">Return Rate</div>
+                                        <div id="return_rate" class="fw-bold" style="color:#e0e7ef;">0.00%</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-4 mb-md-0">
+                                    <label for="purchase_date" class="form-label" style="color:#e0e7ef !important;">Purchase Date</label>
+                                    <input type="date" class="form-control" id="purchase_date" name="purchase_date" required style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">
+                                    <div class="invalid-feedback" style="color:#dc3545;">Please select the purchase date.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="maturity_date" class="form-label" style="color:#e0e7ef !important;">Maturity Date (Optional)</label>
+                                    <input type="date" class="form-control" id="maturity_date" name="maturity_date" style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">
+                                    <div class="form-text" style="color:#6c757d;">Leave blank if not applicable</div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="status" class="form-label" style="color:#e0e7ef !important;">Status</label>
+                                <select class="form-select" id="status" name="status" required style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;">
+                                    {% for status_code, status_name in investment_statuses %}
+                                    <option value="{{ status_code }}" {% if status_code == 'Active' %}selected{% endif %}>{{ status_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback" style="color:#dc3545;">Please select a status.</div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="notes" class="form-label" style="color:#e0e7ef !important;">Notes (Optional)</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Add any additional notes about this investment" style="color:#e0e7ef; background:#232b3b; border-color:#2d3748;"></textarea>
+                            </div>
+                            <div class="d-grid gap-2 mt-4 text-center">
+                                <button type="submit" class="btn btn-primary btn-lg fw-bold modern-save-btn">
+                                    <i class="fas fa-save me-2"></i>Save Investment
+                                </button>
+                                <a href="{% url 'investments' %}" class="btn btn-outline-secondary btn-lg modern-cancel-btn">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(32px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.add-investment-glass-card {
+  background: #181f2a !important;
+  backdrop-filter: none !important;
+  border-radius: 2.2rem;
+  box-shadow: 0 8px 32px 0 rgba(37,99,235,0.18), 0 0 0 4px #2563eb22;
+  border: 1.5px solid #232b3b;
+  animation: cardFadeIn 1s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.add-investment-glass-card > div:first-child {
+  height: 6px;
+  background: linear-gradient(90deg, #2563eb 0%, #36A2EB 100%);
+  border-top-left-radius: 2.2rem;
+  border-top-right-radius: 2.2rem;
+}
+.add-investment-title {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  animation: textFadeIn 0.8s 0.1s forwards;
+  text-align: center;
+}
+.add-investment-subtitle {
+  font-size: 1.08rem;
+  color: #a3bffa;
+  font-weight: 500;
+  opacity: 0;
+  animation: textFadeIn 0.8s 0.3s forwards;
+  text-align: center;
+}
+@keyframes textFadeIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+.add-investment-form .form-label {
+  color: #e0e7ef !important;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.add-investment-form .form-control, .add-investment-form .form-select {
+  border-radius: 1.1rem;
+  background: #232b3b !important;
+  border: 1.5px solid #2d3748;
+  font-size: 1.08rem;
+  color: #e0e7ef;
+  transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 2px 8px 0 rgba(37,99,235,0.07) inset;
+}
+.add-investment-form .form-control:focus, .add-investment-form .form-select:focus {
+  border: 1.5px solid #36a2eb;
+  box-shadow: 0 0 0 0.13rem #2563eb44;
+  background: #232b3b !important;
+  color: #fff;
+}
+.add-investment-form .form-control:hover, .add-investment-form .form-select:hover {
+  background: #202736 !important;
+}
+.add-investment-form .invalid-feedback {
+  animation: textFadeIn 0.5s;
+  color: #ef4444 !important;
+  font-weight: 500;
+}
+.add-investment-form .input-group-text {
+  border-radius: 1.1rem 0 0 1.1rem;
+  background: #232b3b !important;
+  border: 1.5px solid #2d3748;
+  color: #a3bffa;
+}
+.add-investment-form .modern-save-btn {
+  background: linear-gradient(90deg, #2563eb 0%, #36d399 100%) !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 2.2rem;
+  font-size: 1.18rem;
+  font-weight: 700;
+  padding: 0.9rem 2.5rem 0.9rem 1.7rem;
+  box-shadow: 0 6px 24px 0 rgba(37,99,235,0.18);
+  transition: box-shadow 0.18s, background 0.18s, filter 0.18s, transform 0.18s;
+  outline: none;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  position: relative;
+  cursor: pointer;
+  margin-right: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-investment-form .modern-save-btn:hover, .add-investment-form .modern-save-btn:focus {
+  background: linear-gradient(90deg, #36d399 0%, #2563eb 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 32px 0 rgba(37,99,235,0.22);
+  filter: brightness(1.08);
+  transform: scale(1.04);
+}
+.add-investment-form .modern-cancel-btn {
+  border-radius: 2.2rem;
+  font-size: 1.18rem;
+  font-weight: 700;
+  padding: 0.9rem 2.5rem 0.9rem 1.7rem;
+  border: 2px solid #2563eb !important;
+  color: #36a2eb !important;
+  background: #232b3b !important;
+  box-shadow: 0 2px 8px 0 rgba(37,99,235,0.10);
+  transition: box-shadow 0.18s, background 0.18s, color 0.18s, border 0.18s, transform 0.18s;
+  margin-left: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-investment-form .modern-cancel-btn:hover, .add-investment-form .modern-cancel-btn:focus {
+  background: #202736 !important;
+  color: #36a2eb !important;
+  border-color: #36d399 !important;
+  transform: scale(1.04);
+}
+.add-investment-form .d-grid {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: center !important;
+  gap: 1.2rem !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default date to today for purchase date
+    document.getElementById('purchase_date').valueAsDate = new Date();
+    
+    // Get all form elements
+    const amountInvested = document.getElementById('amount_invested');
+    const currentValue = document.getElementById('current_value');
+    const returnsValue = document.getElementById('returns_value');
+    const returnRate = document.getElementById('return_rate');
+    
+    // Function to update returns calculation
+    function updateReturns() {
+        const invested = parseFloat(amountInvested.value) || 0;
+        const current = parseFloat(currentValue.value) || 0;
+        const returns = current - invested;
+        const rate = invested > 0 ? (returns / invested) * 100 : 0;
+        
+        returnsValue.textContent = '₹' + returns.toFixed(2);
+        returnsValue.className = returns >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+        
+        returnRate.textContent = rate.toFixed(2) + '%';
+        returnRate.className = rate >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+    }
+    
+    // Auto-copy amount invested to current value and update returns
+    amountInvested.addEventListener('input', function() {
+        if (!currentValue.value) {
+            currentValue.value = this.value;
+        }
+        updateReturns();
+    });
+    
+    currentValue.addEventListener('input', updateReturns);
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %} 

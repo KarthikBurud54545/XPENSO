@@ -1,0 +1,590 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="Professional Expense Tracker Application" />
+    <meta name="author" content="" />
+    {% csrf_token %}
+    <title>Expense Tracker - Professional Financial Management</title>
+
+    <!-- Modern CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-dark@4/dark.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/budgets.css' %}">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --background-color: #181818;
+            --card-bg: #23272f;
+            --navbar-bg: #23272f;
+            --footer-bg: #23272f;
+            --text-color: #f3f4f6;
+            --muted-text: #b0b3b8;
+            --success: #4ade80;
+            --danger: #f87171;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: var(--navbar-bg) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 600;
+            color: var(--primary-color) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.10);
+            border-radius: 10px;
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .card-title,
+        .card-header,
+        .card-body,
+        .card-footer {
+            color: var(--text-color) !important;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            background: #23272f;
+            color: var(--text-color);
+        }
+
+        .sidebar {
+            background: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border-right: 1px solid #23272f;
+        }
+
+        .sidebar .nav-link {
+            color: var(--text-color) !important;
+            padding: 0.75rem 1rem;
+        }
+
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background: var(--primary-color);
+            color: #fff !important;
+        }
+
+        .table,
+        .table th,
+        .table td {
+            color: var(--text-color) !important;
+            background: var(--card-bg) !important;
+        }
+
+        .badge {
+            font-weight: 500;
+            padding: 0.5em 0.8em;
+            background: #23272f;
+            color: var(--text-color);
+        }
+
+        .pagination .page-link {
+            color: var(--primary-color);
+            background: var(--card-bg);
+            border: 1px solid #23272f;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .form-control,
+        .form-select {
+            background: #23272f;
+            color: var(--text-color);
+            border: 1px solid #444;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: #23272f;
+            color: var(--text-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.15);
+        }
+
+        .form-label,
+        .form-floating>label {
+            color: #f3f4f6 !important;
+        }
+
+        .text-muted,
+        .text-white-50 {
+            color: var(--muted-text) !important;
+        }
+
+        .text-success {
+            color: var(--success) !important;
+        }
+
+        .text-danger {
+            color: var(--danger) !important;
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            border-top: 1px solid #23272f;
+            margin-top: auto;
+            color: var(--muted-text);
+        }
+
+        main {
+            flex: 1;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .card-title,
+        .card-header,
+        .card-body,
+        .card-footer,
+        .navbar,
+        .sidebar,
+        .form-label,
+        .form-floating>label,
+        .table,
+        .table th,
+        .table td,
+        .pagination .page-link,
+        .badge,
+        .alert,
+        .text-muted,
+        .text-white-50 {
+            color: var(--text-color) !important;
+        }
+
+        .btn,
+        .btn-primary,
+        .btn-secondary,
+        .btn-link {
+            color: #fff !important;
+        }
+
+        .navbar .nav-link,
+        .navbar .navbar-brand,
+        .navbar .dropdown-item,
+        .navbar .fa,
+        .navbar i {
+            color: #fff !important;
+        }
+
+        /* Chat styles */
+        .chat-container {
+            background-color: #1a1a1a;
+            border-radius: 0.375rem;
+            padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+            width: 100%;
+            min-width: 0;
+        }
+
+        .chat-header {
+            color: #f3f4f6;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .chat-messages {
+            background-color: #2d2d2d;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.25rem;
+            margin-bottom: 0.5rem;
+            min-height: 100px;
+            max-height: 350px;
+            height: 350px;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .message {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            max-width: 90%;
+            font-size: 0.85rem;
+            word-break: break-word;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            background-color: #2563eb;
+            color: white;
+            margin-left: auto;
+            align-items: flex-end;
+        }
+
+        .message.bot {
+            background-color: #374151;
+            color: white;
+            margin-right: auto;
+            align-items: flex-start;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+            align-self: flex-end;
+        }
+
+        #message-input {
+            background-color: #2d2d2d;
+            border-color: #374151;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        #message-input:focus {
+            background-color: #2d2d2d;
+            border-color: #2563eb;
+            color: white;
+            box-shadow: none;
+        }
+
+        #message-input::placeholder {
+            color: #9ca3af;
+        }
+
+        .btn-outline-light {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-outline-light:hover {
+            background-color: #374151;
+            border-color: #374151;
+        }
+
+        /* Styles for Net Savings Chart */
+        #netSavingsChart {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin-top: 1rem;
+        }
+
+        /* Ensure white text and no font background on addmoney page */
+        main text,
+        main label,
+        main input,
+        main textarea,
+        main select,
+        main .form-control,
+        main .form-label,
+        main .form-floating>label,
+        main ::placeholder {
+            color: #ffffff !important;
+            background-color: transparent !important;
+            /* Ensure no background on text */
+        }
+
+        main input::placeholder,
+        main textarea::placeholder {
+            color: #cccccc !important;
+            /* Slightly lighter placeholder for visibility */
+        }
+
+        /* Welcome Card Gradient */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%) !important;
+            transition: transform 0.3s ease;
+        }
+
+        .bg-gradient-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .bg-gradient-primary .card-body {
+            background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1));
+            border-radius: inherit;
+        }
+
+        /* Card hover effects */
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Progress bar animations */
+        .progress-bar {
+            transition: width 0.6s ease;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="/" style="color: #2563eb !important;">
+                <i class="fas fa-wallet me-2" style="color: #2563eb !important;"></i>XPENSO
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'profile' %}">
+                            <i class="fas fa-user me-1"></i>Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'handleLogout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus me-1"></i>Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="container-fluid py-4">
+        <div class="row gx-0">
+            <!-- Sidebar -->
+            {% block sidebar %}
+            <nav class="col-12 col-md-3 col-lg-2 d-md-block bg-dark sidebar shadow-sm rounded-3 mb-4 mb-md-0"
+                style="min-height: 80vh;">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/index">
+                                <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/weekly">
+                                <i class="fas fa-calendar-week me-2"></i> Weekly Record
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/stats">
+                                <i class="fas fa-calendar-alt me-2"></i> Monthly Record
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/info">
+                                <i class="fas fa-table me-2"></i> Yearly Record
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/tables">
+                                <i class="fas fa-history me-2"></i> History
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/investments">
+                                <i class="fas fa-chart-line me-2"></i> Investments
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/budgets">
+                                <i class="fas fa-piggy-bank me-2"></i> Budgets
+                            </a>
+                        </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link d-flex align-items-center" href="/addmoney">
+                                <i class="fas fa-plus-circle me-2"></i> Add Transaction
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Chat Interface in Sidebar -->
+                    <!-- Removed Chat Interface -->
+
+                </div>
+            </nav>
+            {% endblock %}
+            <main class="col">
+                {% block main %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="text-muted">© 2025 XPENSO. All rights reserved.</div>
+                <div>
+                    <a href="#" class="text-decoration-none text-muted me-3">Privacy Policy</a>
+                    <a href="#" class="text-decoration-none text-muted">Terms & Conditions</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    {% block scripts %}{% endblock %}
+
+    <script>
+        // Auto-hide alerts after 3 seconds
+        $(document).ready(function () {
+            setTimeout(function () {
+                $(".alert").alert('close');
+            }, 3000);
+        });
+
+        // Chat functionality
+        let messages = [];
+
+        function addMessage(text, isUser = true) {
+            const chatMessages = document.getElementById('chat-messages');
+            if (!chatMessages) return; // Prevent error if chat-messages does not exist
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+
+            const messageText = document.createElement('div');
+            messageText.textContent = text;
+
+            const messageTime = document.createElement('div');
+            messageTime.className = 'message-time';
+            messageTime.textContent = new Date().toLocaleTimeString();
+
+            messageDiv.appendChild(messageText);
+            messageDiv.appendChild(messageTime);
+
+            chatMessages.appendChild(messageDiv);
+            messages.push({ text, isUser, timestamp: new Date() });
+
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+
+            if (message) {
+                addMessage(message, true);
+                input.value = '';
+
+                // Simulate bot response
+                setTimeout(() => {
+                    const responses = [
+                        "I've noted your expense. Would you like to see a breakdown?",
+                        "That's a significant amount. Have you considered setting a budget for this category?",
+                        "I can help you track this expense. Would you like to set up a reminder for similar expenses?",
+                        "I notice this is a recurring expense. Would you like to set up automatic tracking?",
+                        "Let me help you analyze this expense pattern."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse, false);
+                }, 1000);
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function clearChat() {
+            document.getElementById('chat-messages').innerHTML = '';
+            messages = [];
+        }
+
+        // Add initial bot message
+        window.onload = function () {
+            setTimeout(() => {
+                addMessage("Hello! I'm your expense tracking assistant. How can I help you today?", false);
+            }, 500);
+        };
+    </script>
+</body>
+
+</html>
